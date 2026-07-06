@@ -1,0 +1,6 @@
+Activity_ID,Equipment_ID,Activity_Name,Planned_Duration_Days,Total_Float_Days
+ACT-E10,EQ-UPS-101,Electrical Hookup & UPS Mount,6,3
+ACT-M20,EQ-CHILL-202,Chilled Water Piping Connection,10,14
+ACT-C30,EQ-GEN-303,Generator Load Testing,5,0
+ACT-B40,EQ-BATT-404,Battery Bank Grid Setup,4,7
+ACT-H50,EQ-CRAH-505,CRAH Thermal Balancing,8,12

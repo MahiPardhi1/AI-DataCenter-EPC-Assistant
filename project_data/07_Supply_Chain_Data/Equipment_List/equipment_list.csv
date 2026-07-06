@@ -1,0 +1,6 @@
+Equipment_ID,Project_ID,Equipment_Name,Vendor_ID,Current_Transit_Status,Days_Delayed
+EQ-UPS-101,PRJ-MUM-2026,300kVA Scalable UPS,VEND-DELTA,Stuck at Port (Customs Hold),14
+EQ-CHILL-202,PRJ-MUM-2026,1200TR Centrifugal Chiller,VEND-YORK,In Transit,0
+EQ-GEN-303,PRJ-MUM-2026,3MW Standby Generator,VEND-CATERPILLAR,On-Site / Delivered,0
+EQ-BATT-404,PRJ-MUM-2026,VRLA Battery Cells,VEND-SCHNEIDER,In Transit,2
+EQ-CRAH-505,PRJ-MUM-2026,Downflow CRAH Module,VEND-VERTIV,Factory Floor Planning,0

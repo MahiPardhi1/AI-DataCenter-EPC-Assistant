@@ -1,0 +1,4 @@
+Activity_ID,Equipment_ID,Activity_Name,Planned_Duration_Days,Total_Float_Days
+ACT-E10,EQ-UPS-101,Electrical Hookup & UPS Mount,6,3
+ACT-M20,EQ-CHILL-202,Chilled Water Piping Connection,10,14
+ACT-C30,EQ-GEN-303,Integrated Systems Testing (IST),5,0
