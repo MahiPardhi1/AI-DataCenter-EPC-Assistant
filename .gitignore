@@ -1,0 +1,78 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.*
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/
+
+# ==========================
+# Jupyter
+# ==========================
+.ipynb_checkpoints/
+
+# ==========================
+# ChromaDB (Generated Vector Database)
+# ==========================
+chroma_db/
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Build Files
+# ==========================
+build/
+dist/
+*.egg-info/
+
+# ==========================
+# Python Cache
+# ==========================
+.pytest_cache/
+.mypy_cache/
+
+# ==========================
+# Temporary Files
+# ==========================
+*.tmp
+*.bak
+
+# ==========================
+# IDE
+# ==========================
+.idea/
+
+# ==========================
+# Model Files (Ignore large models if generated)
+# ==========================
+*.pth
+*.pt
+*.ckpt
+
+# ==========================
+# Keep Dataset PDFs & CSVs
+# (Do NOT ignore project_data/)
+# ==========================

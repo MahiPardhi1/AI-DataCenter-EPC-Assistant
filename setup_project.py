@@ -21,8 +21,9 @@ folders = [
     "project_data/09_Equipment_Images/Generator",
     "project_data/09_Equipment_Images/UPS",
     "project_data/09_Equipment_Images/Cooling_System",
-    "project_data/09_Equipment_Images/Transformer",
-    "project_data/09_Equipment_Images/Electrical_Panel",
+    "project_data/09_Equipment_Images/Battery_Storage",
+    "project_data/09_Equipment_Images/CRAH_Unit",
+    "project_data/09_Equipment_Images/Defect_Samples",
     "project_data/10_Sensor_Readings"
 ]
 

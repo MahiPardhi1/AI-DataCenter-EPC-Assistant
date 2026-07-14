@@ -3,6 +3,7 @@ import random
 import pandas as pd
 from datetime import datetime, timedelta
 from fpdf import FPDF
+from PIL import Image, ImageDraw, ImageFont
 
 # ---------------------------------------------------------
 # RELATIONAL ENTITY BACKBONE (Shared across all files)
@@ -13,8 +14,17 @@ VENDORS = ["VEND-DELTA", "VEND-YORK", "VEND-CATERPILLAR", "VEND-SCHNEIDER", "VEN
 
 print("⏳ Initializing dataset generation based on target document parameters...")
 
-# Direct helper to build PDFs with modern fpdf2 standards (fixes terminal warnings)
-def build_pdf_document(filepath, title, paragraphs):
+# ---------------------------------------------------------
+# Helper 1: normal "born-digital" PDF (has a real text layer -> NLP parsing)
+# ---------------------------------------------------------
+def build_pdf_document(filepath, title, paragraphs, table_rows=None):
+    """
+    table_rows: optional list of (Parameter, Value, Unit/Notes) tuples. When
+    provided, renders an actual bordered parameter table under the intro
+    paragraphs -- this is what makes a spec/datasheet look like a real
+    engineering document instead of 3 lines of prose.
+    """
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=14, style="B")
@@ -24,7 +34,119 @@ def build_pdf_document(filepath, title, paragraphs):
     for p in paragraphs:
         pdf.multi_cell(0, 8, text=p)
         pdf.ln(4)
+
+    if table_rows:
+        pdf.ln(4)
+        pdf.set_font("Helvetica", size=11, style="B")
+        col_widths = [70, 45, 75]
+        headers = ["Parameter", "Value", "Notes / Tolerance"]
+        for w, h in zip(col_widths, headers):
+            pdf.cell(w, 9, text=h, border=1)
+        pdf.ln(9)
+        pdf.set_font("Helvetica", size=10)
+        for row in table_rows:
+            for w, v in zip(col_widths, row):
+                pdf.cell(w, 8, text=str(v), border=1)
+            pdf.ln(8)
+
     pdf.output(filepath)
+
+
+def build_schematic_drawing(filepath, title, project_id, nodes, connections):
+    """
+    Renders an ACTUAL schematic (boxes + connecting lines + labels), not a
+    paragraph describing one. `nodes` is a list of (equipment_id, label, x, y)
+    top-left box positions; `connections` is a list of (from_id, to_id) pairs
+    drawn as straight connecting lines -- a simplified single-line-diagram
+    style layout that's genuinely a drawing.
+    """
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=14, style="B")
+    pdf.cell(0, 10, text=title, center=True)
+    pdf.ln(6)
+    pdf.set_font("Helvetica", size=9)
+    pdf.cell(0, 6, text=f"Project Ref: {project_id}  |  Scale: 1:100 (illustrative, not to scale)", center=True)
+    pdf.ln(14)
+
+    box_w, box_h = 55, 24
+    positions = {}
+    for equipment_id, label, x, y in nodes:
+        positions[equipment_id] = (x + box_w / 2, y + box_h / 2)
+        pdf.set_draw_color(40, 40, 40)
+        pdf.set_line_width(0.6)
+        pdf.rect(x, y, box_w, box_h)
+        pdf.set_xy(x, y + 4)
+        pdf.set_font("Helvetica", size=9, style="B")
+        pdf.cell(box_w, 6, text=label, align="C")
+        pdf.set_xy(x, y + 13)
+        pdf.set_font("Helvetica", size=8)
+        pdf.cell(box_w, 6, text=equipment_id, align="C")
+
+    pdf.set_draw_color(90, 90, 90)
+    pdf.set_line_width(0.4)
+    for from_id, to_id in connections:
+        if from_id in positions and to_id in positions:
+            cx1, cy1 = positions[from_id]
+            cx2, cy2 = positions[to_id]
+            pdf.line(cx1, cy1, cx2, cy2)
+
+    pdf.output(filepath)
+
+
+# ---------------------------------------------------------
+# Helper 2: "scanned" PDF -> renders text onto a flat image, then embeds the
+# image as a full page with NO text layer. This is what actually makes your
+# OCR pipeline real: Module 2 has to run Tesseract/OCR to read these, it
+# can't just extract() the text like it can with Helper 1's PDFs.
+# ---------------------------------------------------------
+def build_scanned_pdf_document(filepath, title, paragraphs, page_w=1240, page_h=1754):
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    img = Image.new("RGB", (page_w, page_h), color=(250, 248, 240))  # slight off-white, like a real scan
+    draw = ImageDraw.Draw(img)
+
+    try:
+        title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
+        body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+    except Exception:
+        title_font = ImageFont.load_default()
+        body_font = ImageFont.load_default()
+
+    y = 80
+    draw.text((page_w / 2, y), title, font=title_font, fill=(20, 20, 20), anchor="ma")
+    y += 100
+
+    for p in paragraphs:
+        # naive wrap so long lines don't run off the page
+        words, line, lines = p.split(), "", []
+        for w in words:
+            test = f"{line} {w}".strip()
+            if draw.textlength(test, font=body_font) > page_w - 160:
+                lines.append(line)
+                line = w
+            else:
+                line = test
+        if line:
+            lines.append(line)
+        for ln in lines:
+            draw.text((80, y), ln, font=body_font, fill=(30, 30, 30))
+            y += 42
+        y += 30
+
+    # add a light scan-noise texture so it visually reads as a scanned page
+    noise = Image.effect_noise((page_w, page_h), 8).convert("L")
+    img = Image.blend(img, Image.merge("RGB", (noise, noise, noise)), 0.03)
+
+    tmp_png = filepath.replace(".pdf", "_scan.png")
+    img.save(tmp_png)
+
+    pdf = FPDF(unit="pt", format=(page_w, page_h))
+    pdf.add_page()
+    pdf.image(tmp_png, x=0, y=0, w=page_w, h=page_h)
+    pdf.output(filepath)
+    os.remove(tmp_png)
+
 
 # ---------------------------------------------------------
 # 1. CLIENT DOCUMENTS (Target: 5-10 PDFs)
@@ -33,81 +155,271 @@ client_specs = [
     ("UPS_Specs.pdf", "Client Specification - Uninterruptible Power Supply", [
         f"Project: {PROJECT_ID} | Code: SPEC-ELE-001",
         "Requirement: Emergency backup topology must utilize Tier III concurrent maintainability configurations.",
-        f"Mandate: Static UPS modules must exhibit energy efficiency rating >= 96.5% at a 50% partial load threshold.",
+        "Mandate: Static UPS modules must exhibit energy efficiency rating >= 96.5% at a 50% partial load threshold.",
         "Electrical Constants: Input operating voltage fixed at 415V, 3-Phase, 50Hz infrastructure."
+    ], [
+        ("Rated Capacity", "300 kVA / 270 kW", "Per module, N+1 config"),
+        ("Efficiency @ 50% Load", ">= 96.5 %", "Minimum acceptance threshold"),
+        ("Input Voltage", "415 V, 3-Phase", "+/- 10% tolerance"),
+        ("Input Frequency", "50 Hz", "+/- 2% tolerance"),
+        ("Battery Autonomy", "10 minutes", "At full rated load"),
+        ("Topology", "Double Conversion, Tier III", "Concurrently maintainable"),
     ]),
     ("Chiller_Specs.pdf", "Client Specification - Mechanical Cooling Plant", [
         f"Project: {PROJECT_ID} | Code: SPEC-MECH-002",
         "Requirement: Chilled water distribution systems must maintain continuous N+1 redundancy.",
         "Mandate: Maximum operational power draw profile cannot exceed 45kW per compressor fan unit.",
         "Fluid Dynamics: Chilled water delivery set point configured precisely to 7.2 degrees Celsius."
+    ], [
+        ("Cooling Capacity", "1200 TR", "N+1 redundant array"),
+        ("Max Compressor Draw", "45 kW", "Per fan unit, hard ceiling"),
+        ("Chilled Water Supply Temp", "7.2 C", "+/- 0.5 C"),
+        ("Chilled Water Return Temp", "12.5 C", "Design delta-T = 5.3 C"),
+        ("Redundancy Level", "N+1", "Mandatory"),
     ]),
     ("Generator_Specs.pdf", "Client Specification - Emergency Backup Generation", [
         f"Project: {PROJECT_ID} | Code: SPEC-ELE-003",
         "Requirement: Standby diesel generators must kick in and assume critical facility load inside a maximum of 10 seconds.",
         "Mandate: Engine speed must dynamically govern at 1500 RPM to sustain steady 50Hz frequency output.",
         "Emissions: Exhaust treatment configurations must pass regional environmental safety metrics."
+    ], [
+        ("Rated Output", "3 MW", "Standby rating"),
+        ("Max Transfer Time", "10 seconds", "ATS engagement ceiling"),
+        ("Governed Speed", "1500 RPM", "For 50 Hz output"),
+        ("Rated Frequency", "50 Hz", "+/- 1% steady state"),
+        ("Emissions Compliance", "CPCB-IV+", "Regional standard"),
     ]),
     ("Battery_Storage_Specs.pdf", "Client Specification - Direct Current Storage Architecture", [
         f"Project: {PROJECT_ID} | Code: SPEC-ELE-004",
         "Requirement: Valve-Regulated Lead-Acid (VRLA) cell layouts must fulfill 15 minutes of uninterrupted autonomy.",
         "Mandate: Individual battery modules must support stable operating ambient thresholds of 22 degrees Celsius."
+    ], [
+        ("Autonomy", "15 minutes", "At full rated UPS load"),
+        ("Cell Chemistry", "VRLA", "Valve-Regulated Lead-Acid"),
+        ("Ambient Operating Temp", "22 C", "+/- 2 C for rated life"),
+        ("Design Life", "10 years", "At rated ambient temp"),
     ]),
     ("HVAC_CRAH_Specs.pdf", "Client Specification - Computer Room Air Handler System", [
         f"Project: {PROJECT_ID} | Code: SPEC-MECH-005",
         "Requirement: Precision CRAH frameworks must enforce downflow variable speed fan controls.",
         "Mandate: Moisture profiles must stay within 40% to 55% relative humidity to meet design baselines."
+    ], [
+        ("Airflow Configuration", "Downflow, VFD Fan", "Variable speed"),
+        ("Relative Humidity Range", "40% - 55%", "Design baseline"),
+        ("Supply Air Temp", "18 C", "Target setpoint"),
+        ("Redundancy Level", "N+1", "Per cooling zone"),
     ])
 ]
-for filename, title, text in client_specs:
-    build_pdf_document(f"project_data/01_Client_Documents/Technical_Specifications/{filename}", title, text)
+for filename, title, text, table in client_specs:
+    build_pdf_document(f"project_data/01_Client_Documents/Technical_Specifications/{filename}", title, text, table)
+
+# ---------------------------------------------------------
+# 1b. CLIENT DOCUMENTS - Scope of Work (previously an empty folder --
+# setup_project.py creates this directory but the original script never
+# wrote anything into it)
+# ---------------------------------------------------------
+build_pdf_document(
+    "project_data/01_Client_Documents/Scope_of_Work/SOW_Electrical_Mechanical_Package.pdf",
+    "Scope of Work - Electrical & Mechanical Package",
+    [
+        f"Project: {PROJECT_ID} | Code: SOW-EM-001",
+        "Package Boundary: Supply, installation, testing, and commissioning of UPS, chiller plant, standby generator, battery storage, and CRAH systems as detailed in the referenced technical specifications.",
+        "Exclusions: Civil foundation works, structural steel fabrication, and fire suppression systems are outside this package and covered under separate SOW-CIVIL-001 and SOW-FIRE-001 documents.",
+        "Handover Requirement: All Level 5 Integrated Systems Testing (IST) must be completed and signed off prior to substantial completion certification."
+    ],
+    [
+        ("Package Value", "Confidential", "Refer commercial contract"),
+        ("Contract Duration", "18 months", "From notice to proceed"),
+        ("Defects Liability Period", "12 months", "Post handover"),
+        ("Responsibility Split", "EPC Contractor", "Design, supply, install, commission"),
+    ]
+)
+
+build_pdf_document(
+    "project_data/01_Client_Documents/Design_Requirements/Design_Basis_Report.pdf",
+    "Design Basis Report - Critical Infrastructure Systems",
+    [
+        f"Project: {PROJECT_ID} | Code: DBR-001",
+        "Design Philosophy: Facility is designed to Uptime Institute Tier III equivalent standards with concurrently maintainable electrical and mechanical distribution paths.",
+        "Redundancy Strategy: N+1 redundancy is mandated at the individual equipment level across UPS, chiller, and CRAH systems; 2N is not required for this phase.",
+        "Design Margin: All critical electrical and mechanical systems must be sized with a minimum 20% headroom above calculated peak IT load to accommodate future scaling."
+    ],
+    [
+        ("Target Tier Level", "Tier III Equivalent", "Uptime Institute framework"),
+        ("Redundancy Level", "N+1", "Equipment level, this phase"),
+        ("Design Margin", "20%", "Above calculated peak IT load"),
+        ("Design Life", "20 years", "Core electrical/mechanical infra"),
+    ]
+)
 
 # ---------------------------------------------------------
 # 2. VENDOR DOCUMENTS (Target: 5-10 PDFs)
+# The two documents that carry compliance deviations (Delta UPS, York Chiller)
+# are now built as SCANNED image-based PDFs -- no hidden "TRAP FOR MODULE X"
+# labels, and Module 2 genuinely has to OCR them to find the numbers.
 # ---------------------------------------------------------
+build_scanned_pdf_document(
+    "project_data/02_Vendor_Documents/Datasheets/Delta_UPS_Submittal.pdf",
+    "Vendor Equipment Submittal - 300kVA System",
+    [
+        f"Supplier: {VENDORS[0]} | Target Equipment: {EQUIPMENT_IDS[0]}",
+        "Performance Parameters: Nominal infrastructure operational matching at 415V, 50Hz, 3-Phase supply.",
+        "Factory acceptance test results log measured operating efficiency of 95.4 percent at the 50 percent partial load test point, recorded under eco-mode firmware settings.",
+        "Note: Eco-mode optimization profiles are enabled by default in the standard factory configuration and can be adjusted on client request."
+    ]
+)
+
+build_scanned_pdf_document(
+    "project_data/02_Vendor_Documents/Datasheets/York_Chiller_Submittal.pdf",
+    "Vendor Equipment Submittal - Centrifugal Chiller Plant",
+    [
+        f"Supplier: {VENDORS[1]} | Target Equipment: {EQUIPMENT_IDS[1]}",
+        "Performance Parameters: Chilled water temperature output comfortably meets the 7.2C design target under full load.",
+        "Compressor fan load logs from bench testing show a peak power draw of 52 kW recorded during sustained heavy-load operation.",
+        "Note: Structural anchoring hardware is included in the standard shipment manifest."
+    ]
+)
+
 vendor_docs = [
-    ("Delta_UPS_Submittal.pdf", "Vendor Equipment Submittal - 300kVA System", [
-        f"Supplier: {VENDORS[0]} | Targeted Target: {EQUIPMENT_IDS[0]}",
-        "Performance Parameters: Nominal infrastructure operational matching at 415V, 50Hz.",
-        "TRAP FOR MODULE 2: Operating performance data logs show actual efficiency at 50% load as 95.4%.",
-        "Note: This variance results from embedded eco-mode optimizations within standard factory code configurations."
-    ]),
-    ("York_Chiller_Submittal.pdf", "Vendor Equipment Submittal - Centrifugal Chiller Plant", [
-        f"Supplier: {VENDORS[1]} | Targeted Target: {EQUIPMENT_IDS[1]}",
-        "Performance Parameters: Chilled water temperature output handles 7.2C design targets easily.",
-        "TRAP FOR MODULE 2: Fan draw profiles document maximum load points peaking at 52kW during heavy operations.",
-        "Note: Structural anchoring packages included in standard shipment manifestations."
-    ]),
-    ("Cat_Generator_Datasheet.pdf", "Vendor Product Manual - 3MW Standby Generator Set", [
-        f"Supplier: {VENDORS[2]} | Targeted Target: {EQUIPMENT_IDS[2]}",
+    ("Cat_Generator_Manual.pdf", "Manuals", "Vendor Product Manual - 3MW Standby Generator Set", [
+        f"Supplier: {VENDORS[2]} | Target Equipment: {EQUIPMENT_IDS[2]}",
         "Performance Parameters: Automatic Transfer Switch (ATS) command loop initiates complete crank within 8.5 seconds.",
         "Engine Constants: Synchronous alternator arrays hold continuous load profile at 1500 RPM with 50Hz stability."
+    ], [
+        ("Rated Output", "3 MW", "Matches client mandate"),
+        ("ATS Transfer Time", "8.5 seconds", "Within 10s client ceiling"),
+        ("Governed Speed", "1500 RPM", "Matches client mandate"),
+        ("Rated Frequency", "50 Hz", "+/- 0.5% steady state"),
     ]),
-    ("Schneider_Battery_Quotation.pdf", "Vendor Commercial Quotation - VRLA Battery Array", [
-        f"Supplier: {VENDORS[3]} | Targeted Target: {EQUIPMENT_IDS[3]}",
-        "Financial Line Items: Emergency cell deployment bundle delivery matches project requirements.",
-        "Autonomy Benchmarks: Confirmed standalone reserve coverage holds for 16.5 minutes at nominal discharge rates."
-    ]),
-    ("Vertiv_CRAH_Manual.pdf", "Vendor Maintenance Manual - Downflow Thermal Units", [
-        f"Supplier: {VENDORS[4]} | Targeted Target: {EQUIPMENT_IDS[4]}",
+    ("Vertiv_CRAH_Manual.pdf", "Manuals", "Vendor Maintenance Manual - Downflow Thermal Units", [
+        f"Supplier: {VENDORS[4]} | Target Equipment: {EQUIPMENT_IDS[4]}",
         "Operations Directive: Electronically commutated (EC) fans modulate response speeds via centralized BMS networks.",
         "Humidity Range: Handles internal moisture tracking boundaries from 35% to 60% efficiently."
-    ])
+    ], [
+        ("Fan Type", "EC (Electronically Commutated)", "BMS-integrated"),
+        ("Humidity Range", "35% - 60%", "Wider than 40-55% client spec"),
+        ("Airflow Configuration", "Downflow", "Matches spec"),
+        ("Maintenance Interval", "6 months", "Filter + fan bearing check"),
+    ]),
+    ("Schneider_Battery_Quotation.pdf", "Quotations", "Vendor Commercial Quotation - VRLA Battery Array", [
+        f"Supplier: {VENDORS[3]} | Target Equipment: {EQUIPMENT_IDS[3]}",
+        "Financial Line Items: Emergency cell deployment bundle delivery matches project requirements.",
+        "Autonomy Benchmarks: Confirmed standalone reserve coverage holds for 16.5 minutes at nominal discharge rates."
+    ], [
+        ("Autonomy Delivered", "16.5 minutes", "Exceeds 15 min mandate"),
+        ("Cell Chemistry", "VRLA", "Matches spec"),
+        ("Unit Price (per cell)", "INR 18,400", "Quoted, ex-works"),
+        ("Lead Time", "6 weeks", "Ex-factory Hyderabad"),
+    ]),
+    ("Delta_UPS_Commercial_Quotation.pdf", "Quotations", "Vendor Commercial Quotation - 300kVA UPS System", [
+        f"Supplier: {VENDORS[0]} | Target Equipment: {EQUIPMENT_IDS[0]}",
+        "Commercial Offer: Pricing below is valid against the technical submittal on file for this same equipment package.",
+        "Payment Terms: 30% advance on order, 60% on dispatch, 10% on commissioning sign-off."
+    ], [
+        ("Unit Price", "INR 42,50,000", "Per 300kVA module, ex-works"),
+        ("Quote Validity", "60 days", "From date of issue"),
+        ("Warranty", "24 months", "Parts and labour"),
+        ("Lead Time", "10 weeks", "Ex-factory"),
+    ]),
 ]
-for filename, title, text in vendor_docs:
-    build_pdf_document(f"project_data/02_Vendor_Documents/Datasheets/{filename}", title, text)
+for filename, subfolder, title, text, table in vendor_docs:
+    build_pdf_document(f"project_data/02_Vendor_Documents/{subfolder}/{filename}", title, text, table)
+
+# ---------------------------------------------------------
+# NEW: Vendor <-> Equipment structured link table (closes the one gap in the
+# relational backbone -- Vendor_ID was previously only free text in PDFs).
+# Doc_Path is a full relative path since documents now live across three
+# different vendor subfolders (Datasheets / Manuals / Quotations) instead of
+# being flattened into one.
+# ---------------------------------------------------------
+vendor_equipment_map = {
+    "Vendor_ID": VENDORS,
+    "Equipment_ID": EQUIPMENT_IDS,
+    "Contract_Ref": [f"CTR-{PROJECT_ID.split('-')[1]}-{100+i}" for i in range(len(VENDORS))],
+    "Datasheet_Doc": [
+        "Datasheets/Delta_UPS_Submittal.pdf",
+        "Datasheets/York_Chiller_Submittal.pdf",
+        "Manuals/Cat_Generator_Manual.pdf",
+        "",  # Schneider battery has no separate datasheet in this dataset -- quotation only
+        "Manuals/Vertiv_CRAH_Manual.pdf",
+    ],
+    "Quotation_Doc": [
+        "Quotations/Delta_UPS_Commercial_Quotation.pdf",
+        "",  # York chiller has no separate quotation in this dataset -- datasheet only
+        "",
+        "Quotations/Schneider_Battery_Quotation.pdf",
+        "",
+    ]
+}
+os.makedirs("project_data/02_Vendor_Documents", exist_ok=True)
+pd.DataFrame(vendor_equipment_map).to_csv("project_data/02_Vendor_Documents/vendor_equipment_map.csv", index=False)
 
 # ---------------------------------------------------------
 # 3. ENGINEERING DRAWINGS (Target: 3-5 PDFs)
+# Two bugs fixed here:
+#  1. These were previously just paragraphs describing a drawing -- no lines
+#     or shapes were ever drawn. build_schematic_drawing() renders real
+#     boxes + connecting lines labeled with Equipment_IDs.
+#  2. All three files were physically written into the "Electrical"
+#     subfolder regardless of their name/content -- "Mechanical" and "HVAC"
+#     sat empty even though setup_project.py creates them. Each drawing now
+#     goes into the subfolder that matches its actual discipline, and a
+#     Floor_Plans drawing (which had nothing at all before) is added.
 # ---------------------------------------------------------
-drawings = ["Electrical_SLD_Rev2.pdf", "Mechanical_Piping_Layout.pdf", "HVAC_Airflow_FloorPlan.pdf"]
-for dwg in drawings:
-    build_pdf_document(f"project_data/03_Engineering_Drawings/Electrical/{dwg}", f"Engineering Blueprint Drawing: {dwg}", [
-        f"Project Domain Ref: {PROJECT_ID}",
-        "Scale Mapping: 1:100 Standard Metric Layout Framework.",
-        f"Referenced Systems: {', '.join(EQUIPMENT_IDS)}",
-        "Disclaimer: Field installation guidelines require manual confirmation against physical site boundaries."
-    ])
+build_schematic_drawing(
+    "project_data/03_Engineering_Drawings/Electrical/Electrical_SLD_Rev2.pdf",
+    "Electrical Single Line Diagram (SLD) - Rev 2",
+    PROJECT_ID,
+    nodes=[
+        ("EQ-UPS-101", "UPS Module", 20, 40),
+        ("EQ-BATT-404", "Battery Bank", 20, 100),
+        ("EQ-GEN-303", "Standby Generator", 110, 70),
+        ("EQ-CRAH-505", "CRAH Panel Feed", 20, 160),
+    ],
+    connections=[("EQ-BATT-404", "EQ-UPS-101"), ("EQ-UPS-101", "EQ-GEN-303"), ("EQ-UPS-101", "EQ-CRAH-505")]
+)
+
+build_schematic_drawing(
+    "project_data/03_Engineering_Drawings/Mechanical/Mechanical_Piping_Layout.pdf",
+    "Mechanical Chilled Water Piping Layout",
+    PROJECT_ID,
+    nodes=[
+        ("EQ-CHILL-202", "Centrifugal Chiller", 20, 40),
+        ("EQ-CRAH-505", "CRAH Unit", 110, 40),
+        ("EQ-GEN-303", "Standby Genset (Ref)", 65, 110),
+    ],
+    connections=[("EQ-CHILL-202", "EQ-CRAH-505")]
+)
+
+build_schematic_drawing(
+    "project_data/03_Engineering_Drawings/HVAC/HVAC_Airflow_FloorPlan.pdf",
+    "HVAC Airflow Floor Plan",
+    PROJECT_ID,
+    nodes=[
+        ("EQ-CRAH-505", "CRAH Downflow Unit", 20, 40),
+        ("EQ-CHILL-202", "Chiller Plant Feed", 110, 40),
+    ],
+    connections=[("EQ-CHILL-202", "EQ-CRAH-505")]
+)
+
+build_schematic_drawing(
+    "project_data/03_Engineering_Drawings/Floor_Plans/Equipment_Room_Floor_Plan.pdf",
+    "Data Hall & Equipment Room Floor Plan - Level 1",
+    PROJECT_ID,
+    nodes=[
+        ("EQ-UPS-101", "Electrical Room - UPS", 20, 40),
+        ("EQ-BATT-404", "Electrical Room - Battery", 110, 40),
+        ("EQ-CHILL-202", "Mechanical Yard - Chiller", 20, 110),
+        ("EQ-CRAH-505", "Data Hall - CRAH", 110, 110),
+        ("EQ-GEN-303", "Generator Yard", 65, 180),
+    ],
+    connections=[
+        ("EQ-UPS-101", "EQ-BATT-404"),
+        ("EQ-CHILL-202", "EQ-CRAH-505"),
+        ("EQ-UPS-101", "EQ-CHILL-202"),
+        ("EQ-GEN-303", "EQ-UPS-101"),
+    ]
+)
 
 # ---------------------------------------------------------
 # 4. RFIs & MEETING MINUTES (Target: 5-8 PDFs)
@@ -169,6 +481,7 @@ schedule_1 = {
     "Planned_Duration_Days": [6, 10, 5, 4, 8],
     "Total_Float_Days": [3, 14, 0, 7, 12]  # ACT-C30 is on the absolute critical path (0 float)
 }
+os.makedirs("project_data/06_Project_Schedule", exist_ok=True)
 pd.DataFrame(schedule_1).to_csv("project_data/06_Project_Schedule/master_baseline_schedule.csv", index=False)
 pd.DataFrame(schedule_1).to_csv("project_data/06_Project_Schedule/active_working_schedule.csv", index=False)
 
@@ -181,6 +494,9 @@ supply_1 = {
     "Current_Transit_Status": ["Stuck at Port (Customs Hold)", "In Transit", "On-Site / Delivered", "In Transit", "Factory Floor Planning"],
     "Days_Delayed": [14, 0, 0, 2, 0]  # UPS is delayed 14 days, breaching its 3 days of schedule float!
 }
+os.makedirs("project_data/07_Supply_Chain_Data/Equipment_List", exist_ok=True)
+os.makedirs("project_data/07_Supply_Chain_Data/Vendor_Details", exist_ok=True)
+os.makedirs("project_data/07_Supply_Chain_Data/Shipment_Status", exist_ok=True)
 pd.DataFrame(supply_1).to_csv("project_data/07_Supply_Chain_Data/Equipment_List/equipment_list.csv", index=False)
 
 supply_2 = {"Vendor_ID": VENDORS, "Contact_Entity": ["Delta Logistics", "York India", "Cat Systems", "Schneider Supply", "Vertiv Delivery"], "Risk_Tier": ["Medium", "Low", "Low", "Low", "High"]}
@@ -191,22 +507,60 @@ pd.DataFrame(supply_3).to_csv("project_data/07_Supply_Chain_Data/Shipment_Status
 
 
 # ---------------------------------------------------------
-# SENSOR DATA GENERATION (Target: 20-30 Records)
+# SENSOR DATA GENERATION (Target: 20-30 Records per equipment)
+#
+# Fixes vs original:
+#  1. Fault onset is a gradual drift, not a hard i>=24 cliff -- so a naive
+#     threshold rule can't "solve" the anomaly by reading your source code.
+#  2. Healthy readings wobble close to (but never past) the alert boundary,
+#     so a real detector has something to be tested against for false positives.
+#  3. A second, fully healthy equipment stream (EQ-UPS-101) is included so you
+#     can demonstrate the model correctly staying silent on a normal asset
+#     while flagging the failing one -- that contrast is the actual demo.
 # ---------------------------------------------------------
+os.makedirs("project_data/10_Sensor_Readings", exist_ok=True)
 base_time = datetime.now()
-sensor_rows = []
-for i in range(30):  # Generates exactly 30 timestamped records
-    is_fault_phase = i >= 24
-    sensor_rows.append({
-        "Record_Index": i + 1,
-        "Timestamp": (base_time + timedelta(seconds=i*5)).strftime("%Y-%m-%d %H:%M:%S"),
-        "Equipment_ID": "EQ-GEN-303",
-        "Voltage_L1_V": round(random.uniform(412, 418) if not is_fault_phase else random.uniform(370, 388), 2),
-        "Frequency_Hz": round(random.uniform(49.8, 50.2) if not is_fault_phase else random.uniform(45.1, 46.9), 2),
-        "Core_Temperature_C": round(random.uniform(78, 84) if not is_fault_phase else random.uniform(104, 116), 2),
-        "BMS_Alert_Status": "NORMAL" if not is_fault_phase else "CRITICAL_TRANSIENT_FREQUENCY_DROP"
-    })
-pd.DataFrame(sensor_rows).to_csv("project_data/10_Sensor_Readings/generator_load_test_telemetry.csv", index=False)
+
+
+def generate_stream(equipment_id, total_records=30, drift_start=None, seed=None):
+    rng = random.Random(seed)
+    rows = []
+    for i in range(total_records):
+        if drift_start is None:
+            # Healthy stream: noise wobbles near but not past the alert boundary
+            drift_frac = 0.0
+        else:
+            # Smooth ramp from 0 -> 1 across the drift window, instead of a cliff
+            drift_frac = max(0.0, min(1.0, (i - drift_start) / max(1, (total_records - drift_start))))
+
+        voltage = 415 - drift_frac * 35 + rng.uniform(-3, 3)
+        frequency = 50.0 - drift_frac * 4.5 + rng.uniform(-0.2, 0.25)
+        temperature = 80 + drift_frac * 30 + rng.uniform(-2, 2)
+
+        if drift_frac >= 0.6:
+            status = "CRITICAL_TRANSIENT_FREQUENCY_DROP"
+        elif drift_frac >= 0.25:
+            status = "WARNING_TREND_DEVIATION"
+        else:
+            status = "NORMAL"
+
+        rows.append({
+            "Record_Index": i + 1,
+            "Timestamp": (base_time + timedelta(seconds=i * 5)).strftime("%Y-%m-%d %H:%M:%S"),
+            "Equipment_ID": equipment_id,
+            "Voltage_L1_V": round(voltage, 2),
+            "Frequency_Hz": round(frequency, 2),
+            "Core_Temperature_C": round(temperature, 2),
+            "BMS_Alert_Status": status
+        })
+    return rows
+
+
+generator_rows = generate_stream("EQ-GEN-303", total_records=30, drift_start=21, seed=42)
+ups_rows = generate_stream("EQ-UPS-101", total_records=30, drift_start=None, seed=7)  # stays healthy throughout
+
+pd.DataFrame(generator_rows).to_csv("project_data/10_Sensor_Readings/generator_load_test_telemetry.csv", index=False)
+pd.DataFrame(ups_rows).to_csv("project_data/10_Sensor_Readings/ups_healthy_baseline_telemetry.csv", index=False)
 
 print("🚀 Complete interconnected dataset constructed successfully according to project guidelines!")
-print("📁 Total Created: 26 Documents/PDFs, 5 Relational Tables/CSVs, 30 Time-Series Records.")
+print("📁 Client+Vendor+Drawing+RFI+Inspection+Commissioning PDFs, 6 Relational Tables/CSVs, 60 Time-Series Records.")

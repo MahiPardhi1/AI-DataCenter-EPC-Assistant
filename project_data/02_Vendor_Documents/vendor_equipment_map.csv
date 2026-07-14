@@ -1,0 +1,6 @@
+Vendor_ID,Equipment_ID,Contract_Ref,Datasheet_Doc,Quotation_Doc
+VEND-DELTA,EQ-UPS-101,CTR-MUM-100,Datasheets/Delta_UPS_Submittal.pdf,Quotations/Delta_UPS_Commercial_Quotation.pdf
+VEND-YORK,EQ-CHILL-202,CTR-MUM-101,Datasheets/York_Chiller_Submittal.pdf,
+VEND-CATERPILLAR,EQ-GEN-303,CTR-MUM-102,Manuals/Cat_Generator_Manual.pdf,
+VEND-SCHNEIDER,EQ-BATT-404,CTR-MUM-103,,Quotations/Schneider_Battery_Quotation.pdf
+VEND-VERTIV,EQ-CRAH-505,CTR-MUM-104,Manuals/Vertiv_CRAH_Manual.pdf,
