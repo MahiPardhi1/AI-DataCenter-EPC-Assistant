@@ -106,12 +106,17 @@ def build_scanned_pdf_document(filepath, title, paragraphs, page_w=1240, page_h=
     img = Image.new("RGB", (page_w, page_h), color=(250, 248, 240))  # slight off-white, like a real scan
     draw = ImageDraw.Draw(img)
 
+    # Cross-platform font loading (Prefers Windows Arial, falls back to Linux/Default)
     try:
-        title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
-        body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+        title_font = ImageFont.truetype("arialbd.ttf", 40)
+        body_font = ImageFont.truetype("arial.ttf", 28)
     except Exception:
-        title_font = ImageFont.load_default()
-        body_font = ImageFont.load_default()
+        try:
+            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
+            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+        except Exception:
+            title_font = ImageFont.load_default()
+            body_font = ImageFont.load_default()
 
     y = 80
     draw.text((page_w / 2, y), title, font=title_font, fill=(20, 20, 20), anchor="ma")
