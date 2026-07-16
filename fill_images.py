@@ -20,39 +20,39 @@ FOLDER_TO_EQUIPMENT = {
 
 categories = {
     "project_data/09_Equipment_Images/Generator": [
-        "https://images.unsplash.com/photo-1622126978371-2911f93618bf?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80"
+        "https://weldpower.com/wp-content/uploads/2025/01/ee30aaf7-984e-4c5e-a2b6-e011e517884a_cdv_photo_003.jpg",
+        "https://media.licdn.com/dms/image/v2/D4E12AQFjg5OIfModyQ/article-inline_image-shrink_1000_1488/article-inline_image-shrink_1000_1488/0/1683299615422?e=2147483647&v=beta&t=GR9ih1Jv5fH2cxg0ZMlucz3rxUg9kLCFE8GRezNtt1I",
+        "https://insideclimatenews.org/wp-content/uploads/2025/01/GettyImages-2194970695.jpg",
+        "https://www.reactpower.com/wp-content/uploads/2019/05/CAT-3456-Generator-Set-1-1-1-scalia-blog-default.jpg",
+        "https://genesalenergy.com/en/wp-content/uploads/sites/5/2023/07/GE-datacenter-GEN138FI.jpg"
     ],
     "project_data/09_Equipment_Images/UPS": [
-        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7TLCPjZhBIhvB1YpDEQLwg-B2aB5gE3sIIBBo3QkifqejcZNtq87TSbk&s=10",
+        "https://i0.wp.com/www.prostarsolar.net/wp-content/uploads/2026/03/How-a-Modular-UPS-System-Ensures-Power-Reliability-in-Data-Centers.jpg?resize=1024%2C573&ssl=1",
+        "https://digitalpower.huawei.com/attachments/data-center-facility/9a74151d47c04f95a9802c57331a5abc.jpeg",
+        "https://d3qut6qyo6tw2j.cloudfront.net/wp-content/uploads/2014/08/09164109/UPS-in-Data-Centers.jpg",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRudGjHUH6aGnALu4K3ozpXPMS8LX9AxPOol38vjtYSpaELa1K80-y2KHo&s=10"
     ],
     "project_data/09_Equipment_Images/Cooling_System": [
-        "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1527689368864-3a821dbccc34?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80"
+        "https://aligneddc.com/wp-content/uploads/2025/10/DSC00059-1024x683.jpg",
+        "https://cdn.pagethink.com/cdn-cgi/image/width=3300,height=1820,fit=cover/content/uploads/insights/115025_N57_jpg201.jpg",
+        "https://www.issmechanical.com/wp-content/uploads/2024/07/Chilers-system-for-data-center.jpg",
+        "https://omdia.tech.informa.com/-/media/tech/omdia/marketing/pr/2022-jul/data-center-cooling-towers_shutterstock_1020042415.jpg?rev=f3699efde7d14437a651ee2477a4b9cb",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiBEwaKsM-qO68kSiZ9KGtI2EHw4I-MvfG2lAIe5pM5GlJo2rTyBkyQi4&s=10"
     ],
     "project_data/09_Equipment_Images/Battery_Storage": [
-        "https://images.unsplash.com/photo-1620825141079-49c62a4a2f89?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1620825141234-4e93cb3d6a8f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1611873893930-e73f5cbba6ac?auto=format&fit=crop&w=600&q=80"
+        "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,w_1500,h_979/https://zincfive.com/wp-content/uploads/2024/08/BC-2-500-Data-Center-Clean-3-1.png",
+        "https://datacenterresources.com/wp-content/uploads/2016/02/Data_Center_Battery_Replacement.jpg",
+        "https://assets.serverroomenvironments.co.uk/thumbnails/facebook_open_graph_large_1324671_1581188239.jpg",
+        "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,w_2000,h_1318/https://zincfive.com/wp-content/uploads/2023/05/ZincFive-BC-2-Data-Center-06.png",
+        "https://img.cablinginstall.com/files/base/ebm/cim/image/2019/04/content_dam_cim_online_articles_2019_04_hpl_application.png?auto=format&w=1000&h=562&fit=clip&dpr=2"
     ],
     "project_data/09_Equipment_Images/CRAH_Unit": [
-        "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1581092918056-0c4c3dad3785?auto=format&fit=crop&w=600&q=80"
+        "https://media.tranetechnologies.com/is/image/TraneTechnologies/tc-computer-room-air-handler-crah-closed-transparent:medium-4-3",
+        "https://www.kaltra.com/wp-content/uploads/2020/12/ft_crah-unit-845x521.png",
+        "https://www.canatec.com.sg/wp-content/uploads/2025/06/CRAC_SMART_COOLING_2025_TOP_PIC_B.png",
+        "https://dcnnmagazine.com/wp-content/uploads/2025/08/img-25.jpg",
+        "https://www.daikin-ce.com/en_us/press-releases/2025/daikin-expands-data-center-cooling-portfolio/_jcr_content/root/main_container/content_container/simple_container/twocolumncontainer_1279793339/column-container-1/image_893446153.coreimg.jpeg/1744893894455/pro-crah-1200x1200-v01-2.jpeg"
     ],
 }
 
