@@ -20,7 +20,7 @@ model.train(
     workers=2,
     project="module5/runs",
     name="commissioning_defect_detector",
-    exist_ok=True
+    exist_ok=True,
     pretrained=True
 )
 
