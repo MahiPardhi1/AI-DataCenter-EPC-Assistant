@@ -76,3 +76,13 @@ dist/
 # Keep Dataset PDFs & CSVs
 # (Do NOT ignore project_data/)
 # ==========================
+
+# YOLO generated outputs
+runs/
+*.pt
+
+# Generated reports
+module5/reports/*_report.txt
+
+# Python cache
+__pycache__/
