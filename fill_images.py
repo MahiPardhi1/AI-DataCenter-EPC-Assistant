@@ -71,10 +71,16 @@ def make_placeholder(path, label, w=600, h=400):
     """
     img = Image.new("RGB", (w, h), color=(60, 65, 75))
     draw = ImageDraw.Draw(img)
+    
+    # Cross-platform font fallback (Windows Arial -> Linux DejaVu -> Default)
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+        font = ImageFont.truetype("arialbd.ttf", 22)
     except Exception:
-        font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+        except Exception:
+            font = ImageFont.load_default()
+            
     draw.rectangle([20, 20, w - 20, h - 20], outline=(150, 155, 165), width=3)
     draw.text((w / 2, h / 2), label, font=font, fill=(220, 220, 220), anchor="mm")
     img.save(path)
@@ -112,7 +118,7 @@ for folder, urls in categories.items():
         })
 
 # ---------------------------------------------------------
-# NEW: Synthetic, annotated "defect" images.
+# Synthetic, annotated "defect" images.
 #
 # The original 25 images were all clean stock photos of healthy equipment --
 # there was nothing in Folder 09 for a defect-detection model to find, even
@@ -156,10 +162,15 @@ for i, (equipment_id, defect_class) in enumerate(defect_plan):
     else:
         draw.ellipse([bx, by, bx + bw, by + bh], fill=color)
 
+    # Cross-platform font fallback (Windows Arial -> Linux DejaVu -> Default)
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+        font = ImageFont.truetype("arial.ttf", 16)
     except Exception:
-        font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+        except Exception:
+            font = ImageFont.load_default()
+            
     draw.text((10, h - 25), f"{equipment_id} - {defect_class} (synthetic QA sample)", font=font, fill=(200, 200, 200))
 
     file_name = f"{defect_dir}/{equipment_id}_defect_{i+1}.jpg"
