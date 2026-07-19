@@ -4,4 +4,7 @@ train: images/train
 val: images/val
 
 names:
-  0: defect
+  0: Scorch_Mark
+  1: Corrosion
+  2: Exposed_Wiring
+  3: Panel_Crack
