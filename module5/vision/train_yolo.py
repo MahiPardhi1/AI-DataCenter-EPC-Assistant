@@ -21,6 +21,7 @@ model.train(
     project="module5/runs",
     name="commissioning_defect_detector",
     exist_ok=True
+    pretrained=True
 )
 
 print("=" * 60)
@@ -31,8 +32,3 @@ print("=" * 60)
 metrics = model.val()
 
 print(metrics)
-
-# Export best model
-model.export(format="onnx")
-
-print("Best model exported.")
