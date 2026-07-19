@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Supply Chain Tracker Dashboard</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f6f8; margin:0; padding:24px; color:#1c2530; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  .meta { color:#667; font-size:13px; margin-bottom:20px; }
+  .cards { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:28px; }
+  .card { background:#fff; border-radius:10px; padding:16px 20px; min-width:150px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .card .label { font-size:12px; color:#667; text-transform:uppercase; letter-spacing:.03em; }
+  .card .value { font-size:26px; font-weight:700; margin-top:4px; }
+  h2 { font-size:16px; margin-top:36px; border-bottom:2px solid #e2e6ea; padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; background:#fff; font-size:13px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  th { background:#1c2530; color:#fff; text-align:left; padding:8px 10px; font-weight:600; }
+  td { padding:7px 10px; border-bottom:1px solid #eef0f2; }
+  tr.row-high { background:#fdecea; }
+  tr.row-medium { background:#fff8e6; }
+</style>
+</head>
+<body>
+  <h1>AI Supply Chain Tracker &mdash; Equipment Dashboard</h1>
+  <div class="meta">Generated 2026-07-19 15:01 &bull; Project PRJ-MUM-2026</div>
+
+  <div class="cards">
+    <div class="card"><div class="label">Total Equipment</div><div class="value">5</div></div>
+    <div class="card"><div class="label">Delayed Shipments</div><div class="value">2</div></div>
+    <div class="card"><div class="label">Schedule Breaches</div><div class="value">1</div></div>
+    <div class="card"><div class="label">High Risk Items</div><div class="value">1</div></div>
+    <div class="card"><div class="label">On-Time %</div><div class="value">60.0%</div></div>
+  </div>
+
+  <h2>Equipment Delivery Tracking</h2>
+  <table><thead><tr><th>Equipment_ID</th><th>Equipment_Name</th><th>Vendor_ID</th><th>Contact_Entity</th><th>Current_Transit_Status</th><th>Origin_Hub</th><th>Est_Arrival_Date</th><th>Days_Delayed</th></tr></thead><tbody><tr class=''><td>EQ-UPS-101</td><td>300kVA Scalable UPS</td><td>VEND-DELTA</td><td>Delta Logistics</td><td>Stuck at Port (Customs Hold)</td><td>Bangalore</td><td>2026-08-12 00:00:00</td><td>14</td></tr><tr class=''><td>EQ-BATT-404</td><td>VRLA Battery Cells</td><td>VEND-SCHNEIDER</td><td>Schneider Supply</td><td>In Transit</td><td>Hyderabad</td><td>2026-08-01 00:00:00</td><td>2</td></tr><tr class=''><td>EQ-CHILL-202</td><td>1200TR Centrifugal Chiller</td><td>VEND-YORK</td><td>York India</td><td>In Transit</td><td>Chennai</td><td>2026-08-19 00:00:00</td><td>0</td></tr><tr class=''><td>EQ-GEN-303</td><td>3MW Standby Generator</td><td>VEND-CATERPILLAR</td><td>Cat Systems</td><td>On-Site / Delivered</td><td>Mumbai Factory</td><td>2026-07-25 00:00:00</td><td>0</td></tr><tr class=''><td>EQ-CRAH-505</td><td>Downflow CRAH Module</td><td>VEND-VERTIV</td><td>Vertiv Delivery</td><td>Factory Floor Planning</td><td>Pune</td><td>2026-09-02 00:00:00</td><td>0</td></tr></tbody></table>
+
+  <h2>Shipment Delay Detection</h2>
+  <table><thead><tr><th>Equipment_ID</th><th>Activity_Name</th><th>Days_Delayed</th><th>Total_Float_Days</th><th>Float_Remaining_Days</th><th>Delay_Classification</th></tr></thead><tbody><tr class='row-high'><td>EQ-UPS-101</td><td>Electrical Hookup & UPS Mount</td><td>14</td><td>3</td><td>-11</td><td>CRITICAL_DELAY - SCHEDULE BREACH</td></tr><tr class=''><td>EQ-GEN-303</td><td>Generator Load Testing</td><td>0</td><td>0</td><td>0</td><td>ON_TIME</td></tr><tr class=''><td>EQ-BATT-404</td><td>Battery Bank Grid Setup</td><td>2</td><td>7</td><td>5</td><td>DELAYED - WITHIN FLOAT</td></tr><tr class=''><td>EQ-CRAH-505</td><td>CRAH Thermal Balancing</td><td>0</td><td>12</td><td>12</td><td>ON_TIME</td></tr><tr class=''><td>EQ-CHILL-202</td><td>Chilled Water Piping Connection</td><td>0</td><td>14</td><td>14</td><td>ON_TIME</td></tr></tbody></table>
+
+  <h2>Supply Chain Risk Analysis</h2>
+  <table><thead><tr><th>Equipment_ID</th><th>Vendor_ID</th><th>Vendor_Risk_Tier</th><th>Days_Delayed</th><th>Risk_Score_0to10</th><th>Risk_Level</th></tr></thead><tbody><tr class='row-high'><td>EQ-UPS-101</td><td>VEND-DELTA</td><td>Medium</td><td>14</td><td>10.0</td><td>HIGH</td></tr><tr class='row-medium'><td>EQ-CRAH-505</td><td>VEND-VERTIV</td><td>High</td><td>0</td><td>6.0</td><td>MEDIUM</td></tr><tr class='row-medium'><td>EQ-GEN-303</td><td>VEND-CATERPILLAR</td><td>Low</td><td>0</td><td>4.0</td><td>MEDIUM</td></tr><tr class=''><td>EQ-BATT-404</td><td>VEND-SCHNEIDER</td><td>Low</td><td>2</td><td>3.0</td><td>LOW</td></tr><tr class=''><td>EQ-CHILL-202</td><td>VEND-YORK</td><td>Low</td><td>0</td><td>2.0</td><td>LOW</td></tr></tbody></table>
+
+  <h2>Recommended Alternative Suppliers</h2>
+  <table><thead><tr><th>Equipment_ID</th><th>Current_Vendor</th><th>Current_Risk_Level</th><th>Recommended_Alternate</th><th>Alternate_Risk_Tier</th><th>Rationale</th></tr></thead><tbody><tr class=''><td>EQ-UPS-101</td><td>VEND-DELTA</td><td>HIGH</td><td>VEND-SCHNEIDER</td><td>Low</td><td>Current vendor is HIGH risk with 14 day(s) delay (-11 day(s) float remaining). VEND-SCHNEIDER carries Low risk tier for this equipment category.</td></tr><tr class=''><td>EQ-CRAH-505</td><td>VEND-VERTIV</td><td>MEDIUM</td><td>VEND-YORK</td><td>Low</td><td>Current vendor is MEDIUM risk with 0 day(s) delay (12 day(s) float remaining). VEND-YORK carries Low risk tier for this equipment category.</td></tr><tr class=''><td>EQ-GEN-303</td><td>VEND-CATERPILLAR</td><td>MEDIUM</td><td>VEND-DELTA</td><td>Medium</td><td>Current vendor is MEDIUM risk with 0 day(s) delay (0 day(s) float remaining). VEND-DELTA carries Medium risk tier for this equipment category.</td></tr></tbody></table>
+
+</body>
+</html>
