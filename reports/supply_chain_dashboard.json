@@ -1,0 +1,203 @@
+{
+  "summary": {
+    "generated_at": "2026-07-19 15:01",
+    "total_equipment": 5,
+    "delayed_shipments": 2,
+    "schedule_breaches": 1,
+    "high_risk_items": 1,
+    "on_time_pct": 60.0
+  },
+  "deliveries": [
+    {
+      "Equipment_ID": "EQ-UPS-101",
+      "Equipment_Name": "300kVA Scalable UPS",
+      "Vendor_ID": "VEND-DELTA",
+      "Contact_Entity": "Delta Logistics",
+      "Current_Transit_Status": "Stuck at Port (Customs Hold)",
+      "Origin_Hub": "Bangalore",
+      "Est_Arrival_Date": "2026-08-12 00:00:00",
+      "Days_Delayed": 14
+    },
+    {
+      "Equipment_ID": "EQ-BATT-404",
+      "Equipment_Name": "VRLA Battery Cells",
+      "Vendor_ID": "VEND-SCHNEIDER",
+      "Contact_Entity": "Schneider Supply",
+      "Current_Transit_Status": "In Transit",
+      "Origin_Hub": "Hyderabad",
+      "Est_Arrival_Date": "2026-08-01 00:00:00",
+      "Days_Delayed": 2
+    },
+    {
+      "Equipment_ID": "EQ-CHILL-202",
+      "Equipment_Name": "1200TR Centrifugal Chiller",
+      "Vendor_ID": "VEND-YORK",
+      "Contact_Entity": "York India",
+      "Current_Transit_Status": "In Transit",
+      "Origin_Hub": "Chennai",
+      "Est_Arrival_Date": "2026-08-19 00:00:00",
+      "Days_Delayed": 0
+    },
+    {
+      "Equipment_ID": "EQ-GEN-303",
+      "Equipment_Name": "3MW Standby Generator",
+      "Vendor_ID": "VEND-CATERPILLAR",
+      "Contact_Entity": "Cat Systems",
+      "Current_Transit_Status": "On-Site / Delivered",
+      "Origin_Hub": "Mumbai Factory",
+      "Est_Arrival_Date": "2026-07-25 00:00:00",
+      "Days_Delayed": 0
+    },
+    {
+      "Equipment_ID": "EQ-CRAH-505",
+      "Equipment_Name": "Downflow CRAH Module",
+      "Vendor_ID": "VEND-VERTIV",
+      "Contact_Entity": "Vertiv Delivery",
+      "Current_Transit_Status": "Factory Floor Planning",
+      "Origin_Hub": "Pune",
+      "Est_Arrival_Date": "2026-09-02 00:00:00",
+      "Days_Delayed": 0
+    }
+  ],
+  "delays": [
+    {
+      "Equipment_ID": "EQ-UPS-101",
+      "Equipment_Name": "300kVA Scalable UPS",
+      "Vendor_ID": "VEND-DELTA",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Days_Delayed": 14,
+      "Total_Float_Days": 3,
+      "Float_Remaining_Days": -11,
+      "Delay_Classification": "CRITICAL_DELAY - SCHEDULE BREACH",
+      "Current_Transit_Status": "Stuck at Port (Customs Hold)"
+    },
+    {
+      "Equipment_ID": "EQ-GEN-303",
+      "Equipment_Name": "3MW Standby Generator",
+      "Vendor_ID": "VEND-CATERPILLAR",
+      "Activity_Name": "Generator Load Testing",
+      "Days_Delayed": 0,
+      "Total_Float_Days": 0,
+      "Float_Remaining_Days": 0,
+      "Delay_Classification": "ON_TIME",
+      "Current_Transit_Status": "On-Site / Delivered"
+    },
+    {
+      "Equipment_ID": "EQ-BATT-404",
+      "Equipment_Name": "VRLA Battery Cells",
+      "Vendor_ID": "VEND-SCHNEIDER",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Days_Delayed": 2,
+      "Total_Float_Days": 7,
+      "Float_Remaining_Days": 5,
+      "Delay_Classification": "DELAYED - WITHIN FLOAT",
+      "Current_Transit_Status": "In Transit"
+    },
+    {
+      "Equipment_ID": "EQ-CRAH-505",
+      "Equipment_Name": "Downflow CRAH Module",
+      "Vendor_ID": "VEND-VERTIV",
+      "Activity_Name": "CRAH Thermal Balancing",
+      "Days_Delayed": 0,
+      "Total_Float_Days": 12,
+      "Float_Remaining_Days": 12,
+      "Delay_Classification": "ON_TIME",
+      "Current_Transit_Status": "Factory Floor Planning"
+    },
+    {
+      "Equipment_ID": "EQ-CHILL-202",
+      "Equipment_Name": "1200TR Centrifugal Chiller",
+      "Vendor_ID": "VEND-YORK",
+      "Activity_Name": "Chilled Water Piping Connection",
+      "Days_Delayed": 0,
+      "Total_Float_Days": 14,
+      "Float_Remaining_Days": 14,
+      "Delay_Classification": "ON_TIME",
+      "Current_Transit_Status": "In Transit"
+    }
+  ],
+  "risk": [
+    {
+      "Equipment_ID": "EQ-UPS-101",
+      "Equipment_Name": "300kVA Scalable UPS",
+      "Vendor_ID": "VEND-DELTA",
+      "Vendor_Risk_Tier": "Medium",
+      "Days_Delayed": 14,
+      "Float_Remaining_Days": -11,
+      "Risk_Score_0to10": 10.0,
+      "Risk_Level": "HIGH"
+    },
+    {
+      "Equipment_ID": "EQ-CRAH-505",
+      "Equipment_Name": "Downflow CRAH Module",
+      "Vendor_ID": "VEND-VERTIV",
+      "Vendor_Risk_Tier": "High",
+      "Days_Delayed": 0,
+      "Float_Remaining_Days": 12,
+      "Risk_Score_0to10": 6.0,
+      "Risk_Level": "MEDIUM"
+    },
+    {
+      "Equipment_ID": "EQ-GEN-303",
+      "Equipment_Name": "3MW Standby Generator",
+      "Vendor_ID": "VEND-CATERPILLAR",
+      "Vendor_Risk_Tier": "Low",
+      "Days_Delayed": 0,
+      "Float_Remaining_Days": 0,
+      "Risk_Score_0to10": 4.0,
+      "Risk_Level": "MEDIUM"
+    },
+    {
+      "Equipment_ID": "EQ-BATT-404",
+      "Equipment_Name": "VRLA Battery Cells",
+      "Vendor_ID": "VEND-SCHNEIDER",
+      "Vendor_Risk_Tier": "Low",
+      "Days_Delayed": 2,
+      "Float_Remaining_Days": 5,
+      "Risk_Score_0to10": 3.0,
+      "Risk_Level": "LOW"
+    },
+    {
+      "Equipment_ID": "EQ-CHILL-202",
+      "Equipment_Name": "1200TR Centrifugal Chiller",
+      "Vendor_ID": "VEND-YORK",
+      "Vendor_Risk_Tier": "Low",
+      "Days_Delayed": 0,
+      "Float_Remaining_Days": 14,
+      "Risk_Score_0to10": 2.0,
+      "Risk_Level": "LOW"
+    }
+  ],
+  "recommendations": [
+    {
+      "Equipment_ID": "EQ-UPS-101",
+      "Equipment_Name": "300kVA Scalable UPS",
+      "Current_Vendor": "VEND-DELTA",
+      "Current_Risk_Level": "HIGH",
+      "Recommended_Alternate": "VEND-SCHNEIDER",
+      "Alternate_Risk_Tier": "Low",
+      "Alternate_Contact": "Schneider Supply",
+      "Rationale": "Current vendor is HIGH risk with 14 day(s) delay (-11 day(s) float remaining). VEND-SCHNEIDER carries Low risk tier for this equipment category."
+    },
+    {
+      "Equipment_ID": "EQ-CRAH-505",
+      "Equipment_Name": "Downflow CRAH Module",
+      "Current_Vendor": "VEND-VERTIV",
+      "Current_Risk_Level": "MEDIUM",
+      "Recommended_Alternate": "VEND-YORK",
+      "Alternate_Risk_Tier": "Low",
+      "Alternate_Contact": "York India",
+      "Rationale": "Current vendor is MEDIUM risk with 0 day(s) delay (12 day(s) float remaining). VEND-YORK carries Low risk tier for this equipment category."
+    },
+    {
+      "Equipment_ID": "EQ-GEN-303",
+      "Equipment_Name": "3MW Standby Generator",
+      "Current_Vendor": "VEND-CATERPILLAR",
+      "Current_Risk_Level": "MEDIUM",
+      "Recommended_Alternate": "VEND-DELTA",
+      "Alternate_Risk_Tier": "Medium",
+      "Alternate_Contact": "Delta Logistics",
+      "Rationale": "Current vendor is MEDIUM risk with 0 day(s) delay (0 day(s) float remaining). VEND-DELTA carries Medium risk tier for this equipment category."
+    }
+  ]
+}
