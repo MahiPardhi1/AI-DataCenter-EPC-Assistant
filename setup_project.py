@@ -24,6 +24,7 @@ folders = [
     "project_data/09_Equipment_Images/Battery_Storage",
     "project_data/09_Equipment_Images/CRAH_Unit",
     "project_data/09_Equipment_Images/Defect_Samples",
+    "project_data/09_Compliance_Knowledge_Base",
     "project_data/10_Sensor_Readings"
 ]
 

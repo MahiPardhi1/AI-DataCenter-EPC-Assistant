@@ -1,0 +1,14 @@
+Requirement_ID,Equipment_ID,Vendor_ID,Compliance_Label,Client_Value,Vendor_Value,Rationale
+REQ-UPS-001,EQ-UPS-101,VEND-DELTA,Non-Compliant,>= 96.5 %,95.4 %,Measured efficiency below client mandate; eco-mode firmware likely contributor.
+REQ-UPS-002,EQ-UPS-101,VEND-DELTA,Compliant,415V 3-Phase 50Hz,415V 50Hz 3-Phase,Matches client input power spec.
+REQ-UPS-003,EQ-UPS-101,VEND-DELTA,Missing Information,Tier III concurrently maintainable,Not stated in submittal,Vendor submittal does not confirm topology / Tier III compliance.
+REQ-CHILL-001,EQ-CHILL-202,VEND-YORK,Non-Compliant,<= 45 kW,52 kW,Bench test draw exceeds client ceiling by 7 kW.
+REQ-CHILL-002,EQ-CHILL-202,VEND-YORK,Compliant,7.2 C,7.2 C,Meets design target under full load.
+REQ-CHILL-003,EQ-CHILL-202,VEND-YORK,Partial Compliance,N+1,N (upgrade available),Standard factory config ships as N; N+1 only available as a chargeable field upgrade.
+REQ-GEN-001,EQ-GEN-303,VEND-CATERPILLAR,Compliant,<= 10 seconds,8.5 seconds,Within client ceiling.
+REQ-GEN-002,EQ-GEN-303,VEND-CATERPILLAR,Compliant,1500 RPM / 50Hz,1500 RPM / 50Hz,Matches client mandate.
+REQ-GEN-003,EQ-GEN-303,VEND-CATERPILLAR,Missing Information,CPCB-IV+,Not stated in manual,Vendor manual does not address emissions compliance.
+REQ-BATT-001,EQ-BATT-404,VEND-SCHNEIDER,Compliant,>= 15 minutes,16.5 minutes,Exceeds mandate.
+REQ-BATT-002,EQ-BATT-404,VEND-SCHNEIDER,Non-Compliant,22 C +/- 2 C,0 C to 28 C rated range,Vendor's rated range extends beyond and conflicts with the tighter client design point.
+REQ-CRAH-001,EQ-CRAH-505,VEND-VERTIV,Compliant,40% - 55%,35% - 60%,Vendor range is a superset of the client spec.
+REQ-CRAH-002,EQ-CRAH-505,VEND-VERTIV,Missing Information,18 C,Not stated in manual,Vendor manual is silent on supply air temperature capability.

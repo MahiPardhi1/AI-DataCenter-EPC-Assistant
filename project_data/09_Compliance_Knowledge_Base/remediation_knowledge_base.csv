@@ -1,0 +1,8 @@
+Requirement_ID,Failure_Mode,Observed_Issue,Suggested_Action
+REQ-UPS-001,Non-Compliant,Measured efficiency below client mandate.,"Request a higher-efficiency UPS model, or ask the vendor to disable the eco-mode firmware profile and re-submit an FAT report at standard operating mode."
+REQ-UPS-003,Missing Information,Submittal does not confirm Tier III / concurrent maintainability.,"Request written confirmation of Tier III concurrently maintainable topology, or a third-party Tier certification letter, before technical approval."
+REQ-CHILL-001,Non-Compliant,Compressor draw exceeds the client ceiling.,"Specify a lower-power compressor variant, or request a derated fan configuration and re-test."
+REQ-CHILL-003,Partial Compliance,Base offer ships as N redundancy; N+1 is a chargeable upgrade.,"Negotiate inclusion of the N+1 upgrade module into the base scope, or raise a commercial variation order before contract award."
+REQ-GEN-003,Missing Information,Vendor manual does not address emissions compliance.,Request a CPCB-IV+ emissions test certificate from the vendor prior to technical sign-off.
+REQ-BATT-002,Non-Compliant,Vendor's rated ambient range conflicts with the client's tighter design point.,"Re-verify battery room HVAC design against the vendor's actual rated range, or request a battery model with a tolerance band matching 22C +/- 2C."
+REQ-CRAH-002,Missing Information,Vendor manual is silent on supply air temperature capability.,Request written confirmation of achievable supply air temperature setpoint from the vendor before technical approval.
