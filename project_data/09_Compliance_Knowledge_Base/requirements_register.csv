@@ -1,0 +1,14 @@
+Requirement_ID,Category,Equipment_ID,Requirement_Text,Client_Value,Criticality,Impact,Probability,Risk_Score
+REQ-UPS-001,UPS,EQ-UPS-101,Efficiency at 50% partial load,>= 96.5 %,High,High,Medium,18
+REQ-UPS-002,UPS,EQ-UPS-101,Input voltage / frequency,415V 3-Phase 50Hz,Medium,Medium,Low,4
+REQ-UPS-003,UPS,EQ-UPS-101,"Topology (Tier III, concurrently maintainable)","Double Conversion, Tier III",High,High,Low,9
+REQ-CHILL-001,Chiller,EQ-CHILL-202,Max compressor draw per fan unit,<= 45 kW,High,Medium,Medium,12
+REQ-CHILL-002,Chiller,EQ-CHILL-202,Chilled water supply temperature,7.2 C +/- 0.5 C,Medium,Medium,Low,4
+REQ-CHILL-003,Chiller,EQ-CHILL-202,Redundancy level,N+1,High,High,Medium,18
+REQ-GEN-001,Generator,EQ-GEN-303,Max ATS transfer time,<= 10 seconds,High,High,Low,9
+REQ-GEN-002,Generator,EQ-GEN-303,Governed speed / frequency,1500 RPM / 50Hz,Medium,Medium,Low,4
+REQ-GEN-003,Generator,EQ-GEN-303,Emissions compliance,CPCB-IV+,High,Medium,Medium,12
+REQ-BATT-001,Battery,EQ-BATT-404,Autonomy at full rated load,>= 15 minutes,High,High,Low,9
+REQ-BATT-002,Battery,EQ-BATT-404,Ambient operating temperature,22 C +/- 2 C,Medium,Medium,Medium,8
+REQ-CRAH-001,CRAH,EQ-CRAH-505,Relative humidity range,40% - 55%,Medium,Low,Low,2
+REQ-CRAH-002,CRAH,EQ-CRAH-505,Supply air temperature setpoint,18 C,Medium,Medium,Medium,8
