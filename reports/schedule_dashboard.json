@@ -1,0 +1,251 @@
+{
+  "summary": {
+    "generated_at": "2026-07-19 15:42",
+    "total_activities": 5,
+    "activities_at_risk": 3,
+    "critical_path_activities": 1,
+    "schedule_breaches": 3,
+    "avg_predicted_delay_days": 8.8
+  },
+  "schedule_analysis": [
+    {
+      "Activity_ID": "ACT-B40",
+      "Equipment_ID": "EQ-BATT-404",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Planned_Duration_Days_Baseline": 4,
+      "Planned_Duration_Days_Active": 4,
+      "Duration_Variance_Days": 0,
+      "Total_Float_Days_Baseline": 7,
+      "Total_Float_Days_Active": 7,
+      "Float_Variance_Days": 0,
+      "Schedule_Change_Flag": "NO_CHANGE"
+    },
+    {
+      "Activity_ID": "ACT-C30",
+      "Equipment_ID": "EQ-GEN-303",
+      "Activity_Name": "Generator Load Testing",
+      "Planned_Duration_Days_Baseline": 5,
+      "Planned_Duration_Days_Active": 5,
+      "Duration_Variance_Days": 0,
+      "Total_Float_Days_Baseline": 0,
+      "Total_Float_Days_Active": 0,
+      "Float_Variance_Days": 0,
+      "Schedule_Change_Flag": "NO_CHANGE"
+    },
+    {
+      "Activity_ID": "ACT-E10",
+      "Equipment_ID": "EQ-UPS-101",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Planned_Duration_Days_Baseline": 6,
+      "Planned_Duration_Days_Active": 6,
+      "Duration_Variance_Days": 0,
+      "Total_Float_Days_Baseline": 3,
+      "Total_Float_Days_Active": 3,
+      "Float_Variance_Days": 0,
+      "Schedule_Change_Flag": "NO_CHANGE"
+    },
+    {
+      "Activity_ID": "ACT-H50",
+      "Equipment_ID": "EQ-CRAH-505",
+      "Activity_Name": "CRAH Thermal Balancing",
+      "Planned_Duration_Days_Baseline": 8,
+      "Planned_Duration_Days_Active": 8,
+      "Duration_Variance_Days": 0,
+      "Total_Float_Days_Baseline": 12,
+      "Total_Float_Days_Active": 12,
+      "Float_Variance_Days": 0,
+      "Schedule_Change_Flag": "NO_CHANGE"
+    },
+    {
+      "Activity_ID": "ACT-M20",
+      "Equipment_ID": "EQ-CHILL-202",
+      "Activity_Name": "Chilled Water Piping Connection",
+      "Planned_Duration_Days_Baseline": 10,
+      "Planned_Duration_Days_Active": 10,
+      "Duration_Variance_Days": 0,
+      "Total_Float_Days_Baseline": 14,
+      "Total_Float_Days_Active": 14,
+      "Float_Variance_Days": 0,
+      "Schedule_Change_Flag": "NO_CHANGE"
+    }
+  ],
+  "predicted_delays": [
+    {
+      "Activity_ID": "ACT-C30",
+      "Activity_Name": "Generator Load Testing",
+      "Equipment_ID": "EQ-GEN-303",
+      "Direct_Delay_Days": 0,
+      "Inherited_Delay_Days": 14,
+      "Predicted_Delay_Days": 14,
+      "Total_Float_Days": 0,
+      "Float_Remaining_Days": -14
+    },
+    {
+      "Activity_ID": "ACT-E10",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Equipment_ID": "EQ-UPS-101",
+      "Direct_Delay_Days": 14,
+      "Inherited_Delay_Days": 0,
+      "Predicted_Delay_Days": 14,
+      "Total_Float_Days": 3,
+      "Float_Remaining_Days": -11
+    },
+    {
+      "Activity_ID": "ACT-B40",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Equipment_ID": "EQ-BATT-404",
+      "Direct_Delay_Days": 2,
+      "Inherited_Delay_Days": 14,
+      "Predicted_Delay_Days": 16,
+      "Total_Float_Days": 7,
+      "Float_Remaining_Days": -9
+    },
+    {
+      "Activity_ID": "ACT-H50",
+      "Activity_Name": "CRAH Thermal Balancing",
+      "Equipment_ID": "EQ-CRAH-505",
+      "Direct_Delay_Days": 0,
+      "Inherited_Delay_Days": 0,
+      "Predicted_Delay_Days": 0,
+      "Total_Float_Days": 12,
+      "Float_Remaining_Days": 12
+    },
+    {
+      "Activity_ID": "ACT-M20",
+      "Activity_Name": "Chilled Water Piping Connection",
+      "Equipment_ID": "EQ-CHILL-202",
+      "Direct_Delay_Days": 0,
+      "Inherited_Delay_Days": 0,
+      "Predicted_Delay_Days": 0,
+      "Total_Float_Days": 14,
+      "Float_Remaining_Days": 14
+    }
+  ],
+  "dependency_analysis": [
+    {
+      "Activity_ID": "ACT-C30",
+      "Activity_Name": "Generator Load Testing",
+      "Predecessors": "ACT-E10",
+      "Direct_Successors": "None",
+      "Downstream_Blast_Radius": 0,
+      "On_Critical_Path": true
+    },
+    {
+      "Activity_ID": "ACT-E10",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Predecessors": "None",
+      "Direct_Successors": "ACT-C30, ACT-B40",
+      "Downstream_Blast_Radius": 2,
+      "On_Critical_Path": false
+    },
+    {
+      "Activity_ID": "ACT-M20",
+      "Activity_Name": "Chilled Water Piping Connection",
+      "Predecessors": "None",
+      "Direct_Successors": "ACT-H50",
+      "Downstream_Blast_Radius": 1,
+      "On_Critical_Path": false
+    },
+    {
+      "Activity_ID": "ACT-B40",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Predecessors": "ACT-E10",
+      "Direct_Successors": "None",
+      "Downstream_Blast_Radius": 0,
+      "On_Critical_Path": false
+    },
+    {
+      "Activity_ID": "ACT-H50",
+      "Activity_Name": "CRAH Thermal Balancing",
+      "Predecessors": "ACT-M20",
+      "Direct_Successors": "None",
+      "Downstream_Blast_Radius": 0,
+      "On_Critical_Path": false
+    }
+  ],
+  "risk": [
+    {
+      "Activity_ID": "ACT-C30",
+      "Activity_Name": "Generator Load Testing",
+      "Equipment_ID": "EQ-GEN-303",
+      "On_Critical_Path": true,
+      "Predicted_Delay_Days": 14,
+      "Float_Remaining_Days": -14,
+      "Vendor_Risk_Tier": "Low",
+      "Downstream_Blast_Radius": 0,
+      "Risk_Score_0to10": 7.5,
+      "Risk_Level": "HIGH"
+    },
+    {
+      "Activity_ID": "ACT-E10",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Equipment_ID": "EQ-UPS-101",
+      "On_Critical_Path": false,
+      "Predicted_Delay_Days": 14,
+      "Float_Remaining_Days": -11,
+      "Vendor_Risk_Tier": "Medium",
+      "Downstream_Blast_Radius": 2,
+      "Risk_Score_0to10": 6.0,
+      "Risk_Level": "MEDIUM"
+    },
+    {
+      "Activity_ID": "ACT-B40",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Equipment_ID": "EQ-BATT-404",
+      "On_Critical_Path": false,
+      "Predicted_Delay_Days": 16,
+      "Float_Remaining_Days": -9,
+      "Vendor_Risk_Tier": "Low",
+      "Downstream_Blast_Radius": 0,
+      "Risk_Score_0to10": 4.5,
+      "Risk_Level": "MEDIUM"
+    },
+    {
+      "Activity_ID": "ACT-H50",
+      "Activity_Name": "CRAH Thermal Balancing",
+      "Equipment_ID": "EQ-CRAH-505",
+      "On_Critical_Path": false,
+      "Predicted_Delay_Days": 0,
+      "Float_Remaining_Days": 12,
+      "Vendor_Risk_Tier": "High",
+      "Downstream_Blast_Radius": 0,
+      "Risk_Score_0to10": 2.0,
+      "Risk_Level": "LOW"
+    },
+    {
+      "Activity_ID": "ACT-M20",
+      "Activity_Name": "Chilled Water Piping Connection",
+      "Equipment_ID": "EQ-CHILL-202",
+      "On_Critical_Path": false,
+      "Predicted_Delay_Days": 0,
+      "Float_Remaining_Days": 14,
+      "Vendor_Risk_Tier": "Low",
+      "Downstream_Blast_Radius": 1,
+      "Risk_Score_0to10": 0.5,
+      "Risk_Level": "LOW"
+    }
+  ],
+  "recovery_actions": [
+    {
+      "Activity_ID": "ACT-C30",
+      "Activity_Name": "Generator Load Testing",
+      "Risk_Level": "HIGH",
+      "Predicted_Delay_Days": 14,
+      "Recommended_Actions": "Crash the activity: add shifts/crew or overlap tasks to recover lost critical-path days. | Escalate to project management immediately - float is already exhausted, this is a live schedule breach."
+    },
+    {
+      "Activity_ID": "ACT-E10",
+      "Activity_Name": "Electrical Hookup & UPS Mount",
+      "Risk_Level": "MEDIUM",
+      "Predicted_Delay_Days": 14,
+      "Recommended_Actions": "Escalate to project management immediately - float is already exhausted, this is a live schedule breach. | Prioritize this activity in recovery planning - 2 downstream activity(ies) will inherit any further slip."
+    },
+    {
+      "Activity_ID": "ACT-B40",
+      "Activity_Name": "Battery Bank Grid Setup",
+      "Risk_Level": "MEDIUM",
+      "Predicted_Delay_Days": 16,
+      "Recommended_Actions": "Escalate to project management immediately - float is already exhausted, this is a live schedule breach."
+    }
+  ]
+}
