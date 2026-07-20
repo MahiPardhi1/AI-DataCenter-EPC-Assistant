@@ -1,9 +1,0 @@
-ultralytics
-opencv-python
-pandas
-numpy
-Pillow
-matplotlib
-streamlit
-google-generativeai
-scikit-learn

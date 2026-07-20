@@ -1,0 +1,32 @@
+ultralytics
+opencv-python
+pandas
+numpy
+Pillow
+matplotlib
+streamlit
+
+# AI & LLM
+google-generativeai
+google-genai
+
+# Machine Learning
+scikit-learn
+sentence-transformers
+
+# Vector Database
+chromadb
+
+# PDF Processing
+pdfplumber
+PyMuPDF
+pypdf
+pdf2image
+pytesseract
+
+# OCR
+easyocr
+
+# Environment & Utilities
+python-dotenv
+rich
