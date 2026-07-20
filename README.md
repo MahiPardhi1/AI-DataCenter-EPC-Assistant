@@ -43,33 +43,85 @@ Modules 3 and 4 each ship with a dedicated `pytest` suite built on deterministic
 
 ## 3. Architecture
 
-```
-                        ┌─────────────────────────────┐
-                        │   project_data/  (10 folders) │
-                        │  Client docs · Vendor docs ·   │
-                        │  Drawings · RFIs · Inspections │
-                        │  Schedule · Supply Chain ·      │
-                        │  Commissioning · Images ·       │
-                        │  Sensor Streams · Compliance KB │
-                        └───────────────┬─────────────┘
-                                        │
-              ┌─────────────────────────┼─────────────────────────┐
-              │                         │                          │
-    ┌─────────▼─────────┐   ┌───────────▼───────────┐   ┌──────────▼──────────┐
-    │  build_rag_        │   │  schedule_risk_         │   │  supply_chain_       │
-    │  database.py        │   │  predictor.py            │   │  tracker.py           │
-    │  → ChromaDB vector   │   │  → cascade delay engine  │   │  → risk + recommender │
-    │    store (Module 1)  │   │    (Module 3)            │   │    (Module 4)          │
-    └─────────┬─────────┘   └───────────┬───────────┘   └──────────┬──────────┘
-              │                         │                          │
-    ┌─────────▼─────────┐   ┌───────────▼───────────┐   ┌──────────▼──────────┐
-    │   assistant.py       │   │  schedule_dashboard.html│   │ supply_chain_          │
-    │   (Gemini + RAG        │   │  + .json export         │   │ dashboard.html          │
-    │   terminal chat)        │   │                          │   │  + .json export         │
-    └─────────────────────┘   └─────────────────────────┘   └───────────────────────┘
-```
+```mermaid
+flowchart TD
+    subgraph DATA["project_data/"]
+        D1["01_Client_Documents"]
+        D2["02_Vendor_Documents<br/>vendor_equipment_map.csv<br/>Datasheets · Quotations"]
+        D3["03_Engineering_Drawings"]
+        D4["04_RFIs_Meeting_Minutes"]
+        D5["05_Inspection_Reports"]
+        D6["06_Project_Schedule<br/>master_baseline_schedule.csv<br/>active_working_schedule.csv"]
+        D7["07_Supply_Chain_Data<br/>Equipment_List · Vendor_Details<br/>Shipment_Status"]
+        D8["08_Commissioning_Reports"]
+        D9A["09_Compliance_Knowledge_Base<br/>requirements_register.csv<br/>remediation_kb.csv · ground_truth.csv"]
+        D9B["09_Equipment_Images<br/>Defect_Samples/"]
+        D10["10_Sensor_Readings"]
+    end
 
-Every module reads from the **same** `project_data/` tree and joins on the same relational keys, so a delay discovered by Module 4 automatically feeds into Module 3's cascade model — this is the actual point of the platform, not a UI trick.
+    subgraph M1["Module 1 — RAG Knowledge Assistant"]
+        M1a["build_rag_database.py<br/>chunk + embed all docs"]
+        M1b[("ChromaDB<br/>project_corpus collection")]
+        M1c["assistant.py<br/>Gemini + retrieval chat"]
+        M1a --> M1b --> M1c
+    end
+
+    subgraph M2["Module 2 — Compliance Checker"]
+        M2a["compliance_checker.py<br/>extract + classify vs requirements"]
+        M2b["compliance_report.csv"]
+        M2c["_eval_metrics.csv<br/>_confusion_matrix.csv"]
+        M2a --> M2b
+        M2a --> M2c
+    end
+
+    subgraph M3["Module 3 — Schedule Risk Predictor"]
+        M3a["schedule_risk_predictor.py<br/>cascade delay + risk engine"]
+        M3b["schedule_dashboard.html / .json"]
+        M3a --> M3b
+    end
+
+    subgraph M4["Module 4 — Supply Chain Tracker"]
+        M4a["supply_chain_tracker.py<br/>delay detection + alt-supplier recs"]
+        M4b["supply_chain_dashboard.html / .json"]
+        M4a --> M4b
+    end
+
+    subgraph M5["Module 5 — Commissioning QA Copilot"]
+        M5a["config.py<br/>paths + safe limits"]
+        M5b["sensor_analyzer.py<br/>voltage/current/temp thresholds"]
+        M5c["YOLO vision<br/>yolov8n.pt defect detection"]
+        M5d["helpers.py<br/>calculate_risk_score()"]
+        M5e["Sensor + defect<br/>risk report"]
+        M5a --> M5b
+        M5a --> M5c
+        M5b --> M5d
+        M5c --> M5d
+        M5d --> M5e
+    end
+
+    D1 --> M1a
+    D2 --> M1a
+    D3 --> M1a
+    D4 --> M1a
+    D5 --> M1a
+    D6 --> M1a
+    D7 --> M1a
+    D8 --> M1a
+    D10 --> M1a
+
+    D9A --> M2a
+    D2 --> M2a
+
+    D6 --> M3a
+    D7 --> M3a
+
+    D7 --> M4a
+    D6 --> M4a
+    D2 -.optional.-> M4a
+
+    D9B --> M5a
+    D10 --> M5a
+```
 
 ---
 
