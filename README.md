@@ -138,6 +138,14 @@ flowchart TD
 - Conversation continuity is handled server-side via the Interactions API (`previous_interaction_id`), so there's no manual prompt re-stitching.
 - Bonus `summarize <filename>` command pulls every chunk from a specific document and produces a clean 4–6 bullet summary.
 
+### ⚖️ Module 2 — AI Compliance Checker *(data-ready)*
+`fill_data.py` has already generated the full ground truth this module needs to run against:
+- `requirements_register.csv` — 13 client requirements across UPS, Chiller, Generator, Battery, and CRAH, each with a computed `Risk_Score` (Criticality × Impact × Probability).
+- `remediation_knowledge_base.csv` — known failure modes mapped to suggested corrective actions.
+- `compliance_ground_truth.csv` — labelled Compliant / Non-Compliant / Partial Compliance / Missing Information verdicts with client value vs. vendor value and rationale, for every requirement.
+
+The automated OCR/NLP comparison engine that turns this into a live checker is the next build step.
+
 ### 📅 Module 3 — AI Schedule Risk Predictor
 `schedule_risk_predictor.py`
 
@@ -157,13 +165,7 @@ flowchart TD
 - **Recommends alternate suppliers** from a curated per-category vendor pool, always excluding the current vendor, ranked by risk tier, with a plain-language rationale for each swap.
 - Same dual HTML + JSON export pattern as Module 3.
 
-### ⚖️ Module 2 — AI Compliance Checker *(data-ready)*
-`fill_data.py` has already generated the full ground truth this module needs to run against:
-- `requirements_register.csv` — 13 client requirements across UPS, Chiller, Generator, Battery, and CRAH, each with a computed `Risk_Score` (Criticality × Impact × Probability).
-- `remediation_knowledge_base.csv` — known failure modes mapped to suggested corrective actions.
-- `compliance_ground_truth.csv` — labelled Compliant / Non-Compliant / Partial Compliance / Missing Information verdicts with client value vs. vendor value and rationale, for every requirement.
 
-The automated OCR/NLP comparison engine that turns this into a live checker is the next build step.
 
 ### 🧪 Module 5 — AI Commissioning QA Copilot *(data-ready)*
 `fill_images.py` has generated a full labelled dataset for this module:
@@ -189,30 +191,9 @@ The automated OCR/NLP comparison engine that turns this into a live checker is t
 
 ---
 
-## 6. Repository Structure
 
-```
-.
-├── setup_project.py                  # Creates the full project_data/ folder tree
-├── fill_data.py                      # Generates PDFs, drawings, schedule, supply chain,
-│                                      #   compliance KB, and sensor telemetry CSVs
-├── fill_images.py                    # Generates equipment images + synthetic defect samples
-│                                      #   + image_annotations.csv ground truth
-├── build_rag_database.py             # Module 1: builds the ChromaDB vector store
-├── assistant.py                      # Module 1: interactive cited-answer RAG chat
-├── schedule_risk_predictor.py        # Module 3: cascade delay + risk engine
-├── supply_chain_tracker.py           # Module 4: delivery risk + vendor recommender
-├── test_schedule_risk_predictor.py   # Module 3 pytest suite (fixture-based)
-├── test_supply_chain_tracker.py      # Module 4 pytest suite (fixture-based)
-├── saple_schedule_dashboard.html     # Sample Module 3 dashboard output
-├── .gitignore
-└── project_data/                     # Generated on first run (see Quickstart) — tracked,
-                                       #   not ignored, so the demo dataset ships with the repo
-```
 
----
-
-## 7. Quickstart
+## 6. Quickstart
 
 ### Prerequisites
 - Python 3.10+
@@ -262,7 +243,7 @@ pytest test_schedule_risk_predictor.py test_supply_chain_tracker.py -v
 
 ---
 
-## 8. Roadmap
+## 7. Roadmap
 
 - [ ] **Streamlit frontend** — replace the static HTML exports for Modules 3 & 4, and give Module 1's terminal chat a proper chat UI, all reading from the same `build_dashboard()` JSON payloads that already exist — no backend rework needed.
 - [ ] **Module 2 — Compliance Checker**: automated OCR/NLP comparison engine over the already-generated `requirements_register.csv` / `compliance_ground_truth.csv`.
@@ -272,10 +253,10 @@ pytest test_schedule_risk_predictor.py test_supply_chain_tracker.py -v
 
 ---
 
-## 9. Why This Matters
+## 8. Why This Matters
 
 Every number in this platform is traceable back to a source row or document — the RAG assistant cites its sources, the schedule predictor shows direct vs. inherited delay separately, and the risk scores are simple, auditable weighted formulas rather than an opaque black box. For an industry where a wrong call costs weeks and crores on a live construction site, **explainability was treated as a feature, not an afterthought.**
-## 📂 Project Structure
+## 9.📂 Project Structure
 
 ```text
 AI-DataCenter-EPC-Assistant/
