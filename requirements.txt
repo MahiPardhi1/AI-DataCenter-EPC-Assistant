@@ -5,6 +5,7 @@ numpy
 Pillow
 matplotlib
 streamlit
+plotly
 
 # AI & LLM
 google-generativeai
