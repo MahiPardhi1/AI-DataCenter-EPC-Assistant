@@ -1,10 +1,8 @@
-# 🏢 CortexEPC — AI-Powered Data Centre EPC Project Intelligence Platform
+# 🏢 AI-Powered Data Centre EPC Intelligence Platform
 
-**One relational dataset. Five AI modules. A single source of truth for a data centre build.**
+### One Unified Dataset • Five AI Modules • One Intelligent Dashboard
 
-> Project ID: `PRJ-MUM-2026` · Domain: EPC (Engineering, Procurement & Construction) for hyperscale data centres · Built for [Hackathon Name / Track]
-
----
+An end-to-end AI platform that assists EPC teams throughout the lifecycle of a hyperscale data centre project by combining document intelligence, compliance verification, schedule forecasting, supply chain monitoring, and commissioning quality assurance into a single Streamlit application.
 
 ## 1. The Problem
 
@@ -25,21 +23,17 @@ None of it talks to each other. A generator shipment delay sitting in a logistic
 
 ---
 
-## 2. What's Actually Built
+## 2. What's Built
 
-This is an honest status table — everything marked ✅ **Implemented** runs end-to-end today on the dataset in this repo and is covered by automated tests. Everything marked 🧩 **Data-ready** has its full data pipeline built (CSVs, PDFs, ground-truth labels, images) but the AI logic on top is scoped for the next build phase.
+All five AI modules are fully implemented and integrated into a single Streamlit dashboard.
 
-| # | Module | Status | What it does |
-|---|--------|--------|---------------|
-| 1 | 💬 AI Project Knowledge Assistant (RAG) | ✅ Implemented | Chat over the entire project corpus with cited answers |
-| 2 | ⚖️ AI Compliance Checker | 🧩 Data-ready | Requirements register + vendor compliance ground truth generated; automated checker is next |
-| 3 | 📅 AI Schedule Risk Predictor | ✅ Implemented | Cascading delay prediction, critical path, recovery actions |
-| 4 | 🚚 AI Supply Chain Tracker | ✅ Implemented | Delay detection against float, risk scoring, alternate vendor recommender |
-| 5 | 🧪 AI Commissioning QA Copilot | 🧩 Data-ready | Synthetic defect images + labelled bounding boxes generated for a CV model; detection pipeline is next |
-
-Modules 3 and 4 each ship with a dedicated `pytest` suite built on deterministic fixtures (not the random dataset generator), so every number the module reports — cascade math, float exhaustion, risk bands — is verified against a hand-computed expected answer.
-
----
+| Module | Status | Description |
+|---------|--------|-------------|
+| 🤖 AI Project Knowledge Assistant | ✅ Complete | RAG-powered document assistant using Gemini + ChromaDB |
+| 📋 AI Compliance Checker | ✅ Complete | Automatically verifies vendor documents against client requirements and generates compliance reports |
+| 📅 AI Schedule Risk Predictor | ✅ Complete | Predicts cascading schedule delays, calculates risk scores, and recommends recovery actions |
+| 🚚 AI Supply Chain Tracker | ✅ Complete | Tracks procurement status, shipment delays, vendor risks, and alternate suppliers |
+| 🧪 AI Commissioning QA Copilot | ✅ Complete | Performs sensor anomaly detection, defect detection using YOLO, and generates commissioning reports |
 
 ## 3. Architecture
 
@@ -130,186 +124,254 @@ flowchart TD
 ### 💬 Module 1 — AI Project Knowledge Assistant
 `build_rag_database.py` + `assistant.py`
 
-- Walks the full `project_data/` tree, extracts text from every PDF (with an **automatic OCR fallback** via Tesseract for scanned documents) and converts every CSV row into a natural-language sentence, so tabular data becomes just as searchable as prose.
-- Chunks and embeds everything into a local, persistent **ChromaDB** collection using the `all-MiniLM-L6-v2` sentence-transformer.
-- Each chunk is tagged with rich metadata (`source`, `doc_category`, `discipline`, `equipment_id`) derived straight from the folder it came from — this is what lets the assistant answer scoped questions like *"what do the HVAC drawings say"* by filtering on category, not just keyword luck.
-- Query-time retrieval is **equipment-aware**: if a question names a known `Equipment_ID` (e.g. `EQ-GEN-303`), retrieval is biased toward chunks tagged with that ID first and backfilled with general semantic search, so a passing UPS mention elsewhere doesn't crowd out the asset the user actually asked about.
-- Answers are generated with **Google Gemini** (`gemini-3.5-flash` via the unified `google-genai` SDK) under a strict system prompt: every factual claim must be cited to its source file, numeric conflicts between chunks (e.g. a client spec vs. a vendor's test result) must be explicitly flagged, and unsupported questions get an honest "the documents don't specify this" instead of a guess.
-- Conversation continuity is handled server-side via the Interactions API (`previous_interaction_id`), so there's no manual prompt re-stitching.
-- Bonus `summarize <filename>` command pulls every chunk from a specific document and produces a clean 4–6 bullet summary.
+*   **Ingestion Pipeline:** Walks the full `project_data/` tree, extracts text from every PDF (utilizing an **automatic OCR fallback** via Tesseract for scanned documents), and converts every CSV row into a natural-language sentence so tabular data becomes fully searchable alongside prose.
+*   **Vector Storage & Tagging:** Chunks and embeds data into a local, persistent **ChromaDB** collection using the `all-MiniLM-L6-v2` sentence-transformer. Each chunk inherits rich metadata (`source`, `doc_category`, `discipline`, `equipment_id`) directly from its source folder to power targeted, scoped queries (e.g., filtering strictly by category rather than relying on keyword luck).
+*   **Equipment-Aware Retrieval:** Automatically detects known `Equipment_IDs` (e.g., `EQ-GEN-303`) within queries, biasing retrieval toward matching chunks first and backfilling with general semantic search to prevent minor mentions elsewhere from diluting relevant asset context.
+*   **Generation & Grounding:** Powered by **Google Gemini** (`gemini-3.5-flash` via the unified `google-genai` SDK) under a strict system prompt requiring strict source-file citations, explicit flagging of numeric conflicts (e.g., client specs vs. vendor test results), and honest fallback handling for unsupported queries.
+*   **State Management & Utilities:** Handles conversation continuity server-side via the Interactions API (`previous_interaction_id`) to eliminate manual prompt re-stitching, and includes a bonus `summarize <filename>` command for rapid 4–6 bullet document digests.
 
-### ⚖️ Module 2 — AI Compliance Checker *(data-ready)*
-`fill_data.py` has already generated the full ground truth this module needs to run against:
-- `requirements_register.csv` — 13 client requirements across UPS, Chiller, Generator, Battery, and CRAH, each with a computed `Risk_Score` (Criticality × Impact × Probability).
-- `remediation_knowledge_base.csv` — known failure modes mapped to suggested corrective actions.
-- `compliance_ground_truth.csv` — labelled Compliant / Non-Compliant / Partial Compliance / Missing Information verdicts with client value vs. vendor value and rationale, for every requirement.
+---
 
-The automated OCR/NLP comparison engine that turns this into a live checker is the next build step.
+### ⚖️ Module 2 — AI Compliance Checker *(Data-Ready)*
+`fill_data.py` has generated the foundational ground truth dataset for this module:
+*   **`requirements_register.csv`:** Contains 13 client requirements across critical infrastructure components (UPS, Chiller, Generator, Battery, CRAH), complete with computed `Risk_Scores` derived from Criticality × Impact × Probability.
+*   **`remediation_knowledge_base.csv`:** Maps known failure modes directly to suggested corrective actions.
+*   **`compliance_ground_truth.csv`:** Provides explicit classification verdicts (Compliant, Non-Compliant, Partial Compliance, Missing Information) accompanied by client versus vendor values and rationales for every requirement.
+*   *Next Steps:* Implementation of the automated OCR/NLP comparison engine to transition this architecture into a live compliance checker.
+
+---
 
 ### 📅 Module 3 — AI Schedule Risk Predictor
 `schedule_risk_predictor.py`
 
-- Diffs the **baseline schedule against the active working schedule** to flag any activity whose duration or float has slipped.
-- Predicts delay for every activity as **direct delay** (from linked equipment's shipment lateness) **plus inherited delay**, propagated through a declared `{activity: [predecessors]}` dependency graph using a **Kahn's-algorithm topological sort** — so a generator delay correctly cascades to every downstream activity in the correct order, and a bad/cyclic dependency map fails loudly at load time instead of silently corrupting the forecast.
-- Computes `Downstream_Blast_Radius` (how many activities would be hit by further slip) and flags critical-path membership.
-- Rolls direct + inherited delay, remaining float, and vendor risk tier into a **0–10 composite risk score** and a HIGH/MEDIUM/LOW band.
-- Produces **prescriptive recovery actions** (crash the schedule, escalate, fast-track prep work, engage a dual-source vendor) instead of a flat alert — the specific action depends on *why* the activity is at risk (critical path breach vs. cascade hub vs. high-risk vendor).
-- Exports a self-contained HTML dashboard (`saple_schedule_dashboard.html` is a real sample run against this repo's dataset) plus a raw JSON payload for any downstream consumer.
+*   **Schedule Differencing:** Compares baseline schedules against active working schedules to instantly flag duration or float slips.
+*   **Cascade Propagation:** Calculates total delay per activity as direct shipment delays plus inherited delays, propagated through a declared `{activity: [predecessors]}` dependency graph via **Kahn's-algorithm topological sort** (ensuring cyclic dependency maps fail safely at load time rather than corrupting forecasts).
+*   **Impact Metrics:** Computes `Downstream_Blast_Radius` (measuring downstream vulnerability to further slip) alongside critical-path membership verification.
+*   **Scoring & Prescriptive Actions:** Aggregates delays, remaining float, and vendor risk into a **0–10 composite risk score** (categorized into HIGH/MEDIUM/LOW bands) to drive context-aware recovery strategies—such as crashing schedules, fast-tracking prep work, or engaging dual-source vendors based on failure modes.
+*   **Export Formats:** Outputs self-contained HTML dashboards (`saple_schedule_dashboard.html`) alongside raw JSON payloads for integration with downstream systems.
+
+---
 
 ### 🚚 Module 4 — AI Supply Chain Tracker
 `supply_chain_tracker.py`
 
-- Tracks every equipment shipment against vendor, transit status, and origin hub.
-- **Delay detection is float-aware, not a flat threshold**: a 2-day delay on an activity with 8 days of float is a non-event; the same 2-day delay on an activity with 0 float is a live schedule breach. Four bands: `ON_TIME`, `DELAYED - WITHIN FLOAT`, `AT_RISK - FLOAT NEARLY EXHAUSTED`, `CRITICAL_DELAY - SCHEDULE BREACH`.
-- Risk-scores every shipment on a 0–10 scale combining vendor risk tier and float exhaustion.
-- **Recommends alternate suppliers** from a curated per-category vendor pool, always excluding the current vendor, ranked by risk tier, with a plain-language rationale for each swap.
-- Same dual HTML + JSON export pattern as Module 3.
-
-
-
-### 🧪 Module 5 — AI Commissioning QA Copilot *(data-ready)*
-`fill_images.py` has generated a full labelled dataset for this module:
-- Real equipment reference photos for Generator, UPS, Cooling System, Battery Storage, and CRAH units (with a local placeholder fallback if a source image is unreachable, so the dataset never has gaps).
-- **Synthetic defect samples** — scorch marks, corrosion, exposed wiring, panel cracks — rendered with exact, known bounding boxes.
-- `image_annotations.csv` — ground truth for every image (`Equipment_ID`, `Is_Defect`, `Defect_Class`, `BBox_X/Y/W/H`), ready to train or evaluate a YOLOv8 defect-detection model against.
+*   **Shipment Monitoring:** Tracks equipment status against vendor timelines, transit states, and origin hubs.
+*   **Float-Aware Delay Detection:** Evaluates delays contextually rather than against flat thresholds (e.g., a 2-day delay on an activity with 8 days of float is categorized as non-critical, whereas the same delay with 0 float triggers a live schedule breach). Categorizes statuses into four clear bands: `ON_TIME`, `DELAYED - WITHIN FLOAT`, `AT_RISK - FLOAT NEARLY EXHAUSTED`, and `CRITICAL_DELAY - SCHEDULE BREACH`.
+*   **Risk Scoring:** Evaluates shipment health using a 0–10 composite scale blending vendor risk tiers with float exhaustion metrics.
+*   **Smart Vendor Recommendations:** Suggests alternate suppliers from curated, category-specific vendor pools (excluding active vendors) ranked by risk tier alongside plain-language rationales.
+*   **Export Formats:** Generates dual HTML dashboard and raw JSON data outputs.
 
 ---
+
+### 🧪 Module 5 — AI Commissioning QA Copilot *(Data-Ready)*
+`fill_images.py` has established a fully labelled synthetic dataset for quality assurance workflows:
+*   **Reference Imagery:** Curated real equipment reference photos for Generator, UPS, Cooling System, Battery Storage, and CRAH units, featuring automated fallback handling to prevent dataset gaps.
+*   **Synthetic Defect Generation:** Simulates structural and operational defects—including scorch marks, corrosion, exposed wiring, and panel cracks—mapped with precise bounding coordinates.
+*   **Annotation Ground Truth:** Provides `image_annotations.csv` containing complete metadata (`Equipment_ID`, `Is_Defect`, `Defect_Class`, `BBox_X/Y/W/H`) optimized for training or evaluating YOLOv8 defect-detection models.
+
+---
+
+| Core LLM Engine | Integration Source |
+| :--- | :--- |
+| **Google Gemini (`gemini-3.5-flash`)** | Powered via the unified `google-genai` SDK |
 
 ## 5. Tech Stack
 
-| Layer | Choice |
-|---|---|
-| LLM | Google Gemini (`gemini-3.5-flash`) via `google-genai` |
-| Vector store & embeddings | ChromaDB (persistent, local) + `all-MiniLM-L6-v2` sentence-transformer |
-| Document parsing / OCR | `pypdf`, `pdf2image`, `pytesseract` |
-| Data & relational joins | `pandas` |
-| Predictive engine | Custom Python (topological sort for cascade propagation, weighted risk scoring) |
-| Synthetic dataset generation | `fpdf2` (PDF specs/drawings), `Pillow` (scanned docs, equipment images, synthetic defects) |
-| Terminal UX | `rich` (Markdown-rendered panels for the RAG assistant) |
-| Testing | `pytest`, deterministic fixtures (no dependency on the random dataset generator) |
-| Frontend dashboard | Static HTML/CSS today (`export_dashboard_html()` in Modules 3 & 4) → **migrating to Streamlit** (see Roadmap) |
+| Layer | Technologies |
+|--------|--------------|
+| Frontend | Streamlit |
+| Backend | Python |
+| LLM | Google Gemini 2.5 Flash |
+| Vector Database | ChromaDB |
+| Embeddings | all-MiniLM-L6-v2 |
+| OCR | Tesseract OCR + pdf2image |
+| Computer Vision | YOLOv8 |
+| NLP | Sentence Transformers |
+| Data Processing | Pandas, NumPy |
+| Image Processing | Pillow, OpenCV |
+| ML Framework | Scikit-learn |
+| Document Parsing | PyPDF, PyMuPDF |
+| Environment | python-dotenv |
+| Testing | pytest |
 
----
 
 
+# 6. Quickstart
 
-## 6. Quickstart
+## Prerequisites
 
-### Prerequisites
 - Python 3.10+
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) installed and on your PATH (only needed if you regenerate/read scanned PDFs)
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) (only needed for Module 1)
+- Tesseract OCR
+- Poppler
+- Gemini API Key
 
-### Install
+---
+
+## Installation
+
 ```bash
+git clone <repository-url>
+
+cd AI-DataCenter-EPC-Assistant
+
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
 
-pip install pandas chromadb sentence-transformers google-genai python-dotenv rich \
-            pypdf pdf2image pytesseract Pillow requests fpdf2 pytest
-```
+# Windows
+venv\Scripts\activate
 
-### 1. Generate the dataset
-```bash
-python setup_project.py     # scaffolds project_data/ folder structure
-python fill_data.py         # generates specs, drawings, schedule, supply chain,
-                             #   compliance KB, and sensor telemetry
-python fill_images.py       # generates equipment photos + synthetic defect samples
-```
-
-### 2. Run Module 1 — Knowledge Assistant
-```bash
-echo "GEMINI_API_KEY=your_key_here" > .env
-python build_rag_database.py    # builds the ChromaDB vector store (run once)
-python assistant.py             # interactive chat — ask about any document in the corpus
-```
-
-### 3. Run Module 3 — Schedule Risk Predictor
-```bash
-python schedule_risk_predictor.py --data-root project_data --out reports/
-# → reports/schedule_dashboard.html + reports/schedule_dashboard.json
-```
-
-### 4. Run Module 4 — Supply Chain Tracker
-```bash
-python supply_chain_tracker.py --data-root project_data --out reports/
-# → reports/supply_chain_dashboard.html + reports/supply_chain_dashboard.json
-```
-
-### 5. Run the tests
-```bash
-pytest test_schedule_risk_predictor.py test_supply_chain_tracker.py -v
+pip install -r requirements.txt
 ```
 
 ---
+
+## Configure Environment
+
+Create a `.env` file in the project root.
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+---
+
+## Generate Project Dataset (Run Once)
+
+```bash
+python fill_data.py
+
+python fill_images.py
+```
+
+---
+
+## Build Vector Database (Run Once)
+
+```bash
+python AI_Assistant/build_rag_database.py
+```
+
+---
+
+## Run Backend Modules
+
+Before launching Streamlit, execute:
+
+```bash
+python Compliance_Checker/compliance_checker.py
+
+python Schedule_Risk_Prediction/schedule_risk_prediction.py
+
+python Supply_Chain_Tracker/supply_chain_tracker.py
+
+python Quality_Assurance/sensors/sensor_analyzer.py
+
+python Quality_Assurance/vision/detect_defect.py
+
+python Quality_Assurance/reports/report_generator.py
+```
+
+---
+
+## Launch the Dashboard
+
+```bash
+streamlit run app.py
+```
+
+Open your browser and navigate to:
+
+```
+http://localhost:8501
+```
+
+The dashboard automatically integrates all five AI modules.
 
 ## 7. Roadmap
 
-- [ ] **Streamlit frontend** — replace the static HTML exports for Modules 3 & 4, and give Module 1's terminal chat a proper chat UI, all reading from the same `build_dashboard()` JSON payloads that already exist — no backend rework needed.
-- [ ] **Module 2 — Compliance Checker**: automated OCR/NLP comparison engine over the already-generated `requirements_register.csv` / `compliance_ground_truth.csv`.
-- [ ] **Module 5 — Commissioning QA Copilot**: YOLOv8 defect detector trained/evaluated on the already-labelled `image_annotations.csv` dataset, plus SCADA sensor stream anomaly detection over `10_Sensor_Readings/`.
-- [ ] Replace the hand-declared `ACTIVITY_DEPENDENCIES` map in Module 3 with a real predecessor/successor column once the schedule source system exposes one — the cascade engine already consumes it as a pluggable `{activity: [predecessors]}` dict, so no logic changes needed.
-- [ ] Wire Module 4's delay detection directly into Module 3's `Days_Delayed` input, so a supply chain event triggers a live schedule re-forecast instead of a separate report.
-
----
+- [ ] One-click startup (run every backend service directly from Streamlit)
+- [ ] Live Primavera/MS Project integration
+- [ ] SAP & ERP procurement integration
+- [ ] IoT streaming instead of static sensor CSVs
+- [ ] BIM / Digital Twin integration
+- [ ] Multi-agent collaboration between modules
+- [ ] Role-based authentication
+- [ ] Cloud deployment (AWS / Azure / GCP)
+- [ ] Mobile application for field engineers
+- [ ] Real-time project analytics dashboard
 
 ## 8. Why This Matters
 
-Every number in this platform is traceable back to a source row or document — the RAG assistant cites its sources, the schedule predictor shows direct vs. inherited delay separately, and the risk scores are simple, auditable weighted formulas rather than an opaque black box. For an industry where a wrong call costs weeks and crores on a live construction site, **explainability was treated as a feature, not an afterthought.**
-## 9.📂 Project Structure
+Modern EPC projects generate thousands of documents, engineering drawings, procurement records, inspection reports, commissioning logs, and sensor readings. Managing these independently leads to schedule overruns, compliance failures, increased costs, and delayed project delivery.
+
+CortexEPC transforms fragmented project information into a unified AI-powered decision support platform.
+
+The platform enables project teams to:
+
+- 🤖 Ask natural-language questions across the complete project knowledge base.
+- 📋 Automatically verify vendor submissions against client specifications.
+- 📅 Predict schedule delays before they impact project milestones.
+- 🚚 Monitor procurement and logistics risks in real time.
+- 🧪 Detect commissioning defects using computer vision and sensor analytics.
+
+Unlike traditional dashboards, CortexEPC combines document intelligence, predictive analytics, computer vision, and engineering workflows into a single application.
+
+Every recommendation remains transparent and explainable. AI responses include document citations, compliance decisions are backed by requirement comparisons, schedule forecasts show cascading delay calculations, and risk scores are generated using interpretable engineering models rather than opaque black-box predictions.
+
+The result is a practical AI platform that helps EPC teams reduce delays, improve compliance, minimize project risks, and deliver hyperscale data centre projects more efficiently.
+
+
+## 9. 📂 Project Structure
 
 ```text
 AI-DataCenter-EPC-Assistant/
 │
 ├── AI_Assistant/
 │   ├── assistant.py
-│   └── build_rag_database.py
+│   ├── build_rag_database.py
+│   └── __init__.py
 │
 ├── Compliance_Checker/
 │   ├── compliance_checker.py
 │   ├── compliance_report.csv
 │   ├── compliance_report_complete.csv
-│   └── compliance_report_evaluation.csv
-│
-Quality_Assurance/
-│
-├── reports/
-│   └── report_generator.py
-│
-├── sensors/
-│   └── sensor_analyzer.py
-│
-├── utils/
-│   ├── config.py
-│   └── helper.py
-│
-Quality_Assurance/
-│
-├── reports/
-│   └── report_generator.py
-│
-├── sensors/
-│   └── sensor_analyzer.py
-│
-├── utils/
-│   ├── config.py
-│   └── helper.py
-│
-└── vision/
-    ├── detect_defect.py
-    ├── generate_defect_images.py
-    ├── prepare_dataset.py
-    └── train_yolo.py
+│   ├── compliance_report_evaluation.csv
+│   └── __init__.py
 │
 ├── Schedule_Risk_Prediction/
+│   ├── schedule_risk_prediction.py
 │   ├── schedule_dashboard.py
 │   ├── schedule_dashboard.html
-│   └── schedule_risk_prediction.py
+│   └── __init__.py
 │
 ├── Supply_Chain_Tracker/
+│   ├── supply_chain_tracker.py
 │   ├── supply_chain_dashboard.py
 │   ├── supply_chain_dashboard.html
-│   └── supply_chain_tracker.py
+│   └── __init__.py
+│
+├── Quality_Assurance/
+│   ├── reports/
+│   │   ├── report_generator.py
+│   │   └── __init__.py
+│   │
+│   ├── sensors/
+│   │   ├── sensor_analyzer.py
+│   │   └── __init__.py
+│   │
+│   ├── vision/
+│   │   ├── detect_defect.py
+│   │   ├── train_yolo.py
+│   │   ├── prepare_dataset.py
+│   │   ├── generate_defect_images.py
+│   │   ├── best.pt
+│   │   └── __init__.py
+│   │
+│   ├── utils/
+│   │   ├── config.py
+│   │   ├── helper.py
+│   │   └── __init__.py
+│   │
+│   └── __init__.py
 │
 ├── project_data/
 │   ├── 01_Client_Documents/
@@ -323,11 +385,16 @@ Quality_Assurance/
 │   ├── 09_Compliance_Knowledge_Base/
 │   ├── 10_Equipment_Images/
 │   ├── 11_Sensor_Readings/
-│   └── 12_Quality_Assurance/
+│   └── chroma_db/
+│
+├── reports/
 │
 ├── fill_data.py
 ├── fill_images.py
+├── app.py
 ├── requirements.txt
 ├── README.md
-└── .gitignore
+├── .env.example
+├── .gitignore
+└── LICENSE
 ```
