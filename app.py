@@ -847,12 +847,15 @@ def render_qa():
                 empty_state("Vision model not available", "Quality_Assurance.vision.detect_defect could not be imported.")
             else:
                 if st.button("Run Defect Detection", type="primary"):
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-                        tmp.write(img.getbuffer())
-                        tmp_path = tmp.name
+                    from PIL import Image
+                    
+                    # 1. Convert uploaded file directly to a PIL Image
+                    image_obj = Image.open(img)
+                    
                     with st.spinner("Running YOLO defect detection..."):
                         try:
-                            run_defect_detection(tmp_path)
+                            # 2. Pass the image object AND the original filename 
+                            run_defect_detection(image_obj, filename_override=img.name)
                             st.success("Detection complete - see Generated Reports tab.")
                         except Exception as e:
                             st.error(f"Detection failed: {e}")
