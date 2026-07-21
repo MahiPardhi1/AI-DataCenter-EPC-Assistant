@@ -283,6 +283,18 @@ Quality_Assurance/
 │   ├── config.py
 │   └── helper.py
 │
+Quality_Assurance/
+│
+├── reports/
+│   └── report_generator.py
+│
+├── sensors/
+│   └── sensor_analyzer.py
+│
+├── utils/
+│   ├── config.py
+│   └── helper.py
+│
 └── vision/
     ├── detect_defect.py
     ├── generate_defect_images.py
