@@ -6,16 +6,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual Environments
-venv/
-.venv/
-env/
-ENV/
-
-# Environment Variables
+# Environment variables
 .env
 .env.*
 !.env.example
+
 
 # ==========================
 # VS Code
