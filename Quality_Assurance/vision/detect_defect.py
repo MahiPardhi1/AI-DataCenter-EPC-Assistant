@@ -7,11 +7,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "r
 
 from report_generator import generate_report
 
-# Load trained model
-model = YOLO("module5/weights/best.pt")
+# Load trained model safely with error handling
+MODEL_PATH = "module5/runs/commissioning_defect_detector/weights/best.pt"
+
+try:
+    model = YOLO(MODEL_PATH)
+except Exception as e:
+    model = None
 
 
 def detect(image_path):
+    if model is None:
+        print(f"\n[Error] Model weights not found at '{MODEL_PATH}'.")
+        print("Please run 'train_yolo.py' first to train the model before running defect detection.")
+        return
 
     results = model.predict(
         source=image_path,
@@ -29,9 +38,7 @@ def detect(image_path):
     print("==============================")
 
     for r in results:
-
         for box in r.boxes:
-
             cls = int(box.cls[0])
             conf = float(box.conf[0])
 
@@ -56,11 +63,9 @@ def detect(image_path):
 
 
 if __name__ == "__main__":
-
     image_path = input("Enter image path: ")
 
     if not os.path.exists(image_path):
         print("Image not found!")
-
     else:
         detect(image_path)
