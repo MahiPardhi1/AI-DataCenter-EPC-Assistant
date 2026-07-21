@@ -48,12 +48,20 @@ try:
     from Compliance_Checker.compliance_checker import run_compliance_check
 except Exception as e:
     COMPLIANCE_OK, COMPLIANCE_ERR = False, str(e)
-
+# SAFE IMPORT FOR SCHEDULE RISK PREDICTOR
 SCHEDULE_OK, SCHEDULE_ERR = True, ""
 try:
-    from Schedule_Risk_Prediction.schedule_risk_prediction import ScheduleRiskPredictor
+    from Schedule_Risk_Predictor.schedule_risk_prediction import ScheduleRiskPredictor
 except Exception as e:
-    SCHEDULE_OK, SCHEDULE_ERR = False, str(e)
+    # Fallback to direct file loading if python path fails
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("schedule_risk_prediction", str(BASE_DIR / "Schedule_Risk_Predictor" / "schedule_risk_prediction.py"))
+        srp_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(srp_mod)
+        ScheduleRiskPredictor = srp_mod.ScheduleRiskPredictor
+    except Exception as inner_e:
+        SCHEDULE_OK, SCHEDULE_ERR = False, str(inner_e)
 
 SUPPLY_OK, SUPPLY_ERR = True, ""
 try:
@@ -84,6 +92,15 @@ try:
     from Quality_Assurance.reports.report_generator import generate_report
 except Exception:
     QA_REPORT_OK = False
+
+# Module 5 Pipeline Automation Imports
+QA_PIPELINE_OK = True
+try:
+    from Quality_Assurance.vision.generate_defect_images import generate_images as run_image_gen
+    from Quality_Assurance.vision.prepare_dataset import process_dataset_main
+    from Quality_Assurance.vision.train_yolo import train_yolo_model
+except Exception:
+    QA_PIPELINE_OK = False
 
 
 # ---------------------------------------------------------------------------
@@ -191,12 +208,6 @@ button[kind="primary"]{
 .ai-hero h2{ font-size:1.3rem; font-weight:800; margin-bottom:0.2rem; }
 .ai-hero p{ color:var(--text-dim); font-size:0.9rem; margin-bottom:1rem; }
 
-.chip{
-  display:inline-block; background:rgba(255,255,255,0.05); border:1px solid var(--border);
-  border-radius:999px; padding:0.4rem 0.9rem; font-size:0.8rem; color:var(--text-dim);
-  margin:0.2rem 0.3rem 0.2rem 0; cursor:pointer;
-}
-
 /* Section title */
 .section-title{ font-size:1.05rem; font-weight:700; margin:1.1rem 0 0.6rem 0; color:var(--text); }
 .subtle{ color:var(--text-dim); font-size:0.85rem; }
@@ -265,11 +276,10 @@ def get_compliance_df():
 
 @st.cache_resource(show_spinner=False)
 def _load_ai_assistant():
-    """Lazily imports AI_Assistant.assistant on first actual use."""
     try:
         module = importlib.import_module("AI_Assistant.assistant")
     except SystemExit:
-        return {"ok": False, "err": "RAG database not found. Run build_rag_database.py first to build the project_corpus collection.", "mod": None}
+        return {"ok": False, "err": "RAG database not found. Run build_rag_database.py first.", "mod": None}
     except Exception as e:
         return {"ok": False, "err": str(e), "mod": None}
 
@@ -283,7 +293,6 @@ def _load_ai_assistant():
 
 
 def run_ai_query(question: str):
-    """Direct call into AI_Assistant.assistant's retrieval + Gemini client."""
     state = _load_ai_assistant()
     if not state["ok"]:
         return None, [], state["err"]
@@ -319,11 +328,11 @@ NAV_ITEMS = [
     ("Supply Chain Tracker", "🚚"),
     ("Commissioning QA", "🧪"),
     ("Alerts", "🔔"),
-    ("Settings", "⚙"),
+    ("Settings", "⚙️"),
 ]
 
 
-def page_header(icon, title, description, accent="#2563EB"):
+def page_header(icon, title, description, accent="#2563EB", show_search=True):
     crumb = f"AI EPC Platform / {title}"
     st.markdown(f"""
     <div class="top-header" style="border-color:{accent}55;">
@@ -332,16 +341,21 @@ def page_header(icon, title, description, accent="#2563EB"):
       <p>{description}</p>
     </div>
     """, unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
-    with c1:
-        st.text_input("Search", placeholder=f"Search within {title}...", label_visibility="collapsed", key=f"search_{title}")
+
+    if show_search:
+        c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
+        with c1:
+            st.text_input("Search", placeholder=f"Search within {title}...", label_visibility="collapsed", key=f"search_{title}")
+    else:
+        c2, c3, c4 = st.columns([1, 1, 1])
+
     with c2:
         if st.button("🔄 Refresh", key=f"refresh_{title}", use_container_width=True):
             st.cache_data.clear()
             st.cache_resource.clear()
             st.rerun()
     with c3:
-        st.button("⬇ Export", key=f"export_{title}", use_container_width=True)
+        st.button("⬇️ Export", key=f"export_{title}", use_container_width=True)
     with c4:
         st.button("⚡ Quick Actions", key=f"qa_{title}", use_container_width=True)
     st.write("")
@@ -362,7 +376,7 @@ def kpi_card(col, icon, label, value, trend, color):
 def empty_state(message, hint=""):
     st.markdown(f"""
     <div class="glass-card" style="text-align:center; padding:2.2rem;">
-      <div style="font-size:1.6rem;">📡</div>
+      <div style="font-size:1.6rem;">📶</div>
       <div style="font-weight:600; margin-top:0.4rem;">{message}</div>
       <div class="subtle" style="margin-top:0.2rem;">{hint}</div>
     </div>
@@ -449,11 +463,10 @@ def render_dashboard():
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- AI Command Center (hero) ----
     st.markdown("""
     <div class="ai-hero">
       <h2>🤖 AI Command Center</h2>
-      <p>Ask anything about compliance, schedule, supply chain, or commissioning &mdash; grounded in your project documents.</p>
+      <p>Ask anything about compliance, schedule, supply chain, or commissioning — grounded in your project documents.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -503,7 +516,6 @@ def render_dashboard():
 
     st.markdown('<div class="section-title">Executive Overview</div>', unsafe_allow_html=True)
 
-    # ---- KPI computations ----
     comp_df = get_compliance_df()
     compliance_score = None
     if comp_df is not None and len(comp_df):
@@ -544,8 +556,8 @@ def render_dashboard():
              f"{schedule_summary['activities_at_risk']} at risk" if schedule_summary else "N/A",
              f"of {schedule_summary['total_activities']} activities" if schedule_summary else "no data", "#F59E0B")
     kpi_card(k4, "🧪", "Quality Score",
-             "N/A", "QA module not yet reporting", "#06B6D4")
-    kpi_card(k5, "🏗", "Commissioning Progress",
+             "N/A", "QA module active", "#06B6D4")
+    kpi_card(k5, "🏗️", "Commissioning Progress",
              f"{supply_summary['on_time_pct']}%" if supply_summary else "N/A",
              "on-time delivery rate", "#8B5CF6")
     kpi_card(k6, "🚨", "Critical Alerts",
@@ -569,7 +581,7 @@ def render_dashboard():
             except Exception as e:
                 empty_state("Schedule risk data unavailable", str(e))
         else:
-            empty_state("Schedule module not connected", SCHEDULE_ERR or "Could not load project_data schedule files.")
+            empty_state("Schedule module not connected", SCHEDULE_ERR or "Could not load schedule files.")
 
     with col_right:
         st.markdown('<div class="section-title">Compliance Breakdown</div>', unsafe_allow_html=True)
@@ -586,39 +598,6 @@ def render_dashboard():
             st.plotly_chart(fig, use_container_width=True)
         else:
             empty_state("No compliance report found", "Run a check from the Compliance Checker page.")
-
-    st.markdown('<div class="section-title">Recent Activity & AI Insights</div>', unsafe_allow_html=True)
-    a1, a2 = st.columns(2)
-    with a1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("**Recent Activity**")
-        events = []
-        if comp_df is not None:
-            events.append(f"Compliance report refreshed &mdash; {len(comp_df)} requirements evaluated")
-        if schedule_summary:
-            events.append(f"Schedule risk model run &mdash; {schedule_summary['activities_at_risk']} activities flagged")
-        if supply_summary:
-            events.append(f"Supply chain sync &mdash; {supply_summary['delayed_shipments']} shipments delayed")
-        if not events:
-            events = ["No recent activity recorded yet."]
-        for e in events:
-            st.markdown(f"- {e}")
-        st.markdown('</div>', unsafe_allow_html=True)
-    with a2:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("**AI Recommendations**")
-        recs = []
-        if schedule_summary and schedule_summary.get("schedule_breaches", 0) > 0:
-            recs.append("Prioritize recovery actions for activities that have breached float.")
-        if comp_df is not None and (comp_df["Compliance_Label"] == "Non-Compliant").any():
-            recs.append("Escalate non-compliant vendor items for remediation before commissioning sign-off.")
-        if supply_summary and supply_summary.get("high_risk_items", 0) > 0:
-            recs.append("Evaluate alternate suppliers for high-risk equipment categories.")
-        if not recs:
-            recs = ["No AI recommendations at this time - all monitored signals are within tolerance."]
-        for r in recs:
-            st.markdown(f"- {r}")
-        st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -681,7 +660,7 @@ def render_compliance():
 
     if run_clicked:
         out_path = COMPLIANCE_OUT / "compliance_report.csv"
-        with st.spinner("Extracting vendor documents (OCR runs automatically for scanned PDFs)..."):
+        with st.spinner("Extracting vendor documents..."):
             try:
                 run_compliance_check(PROJECT_DATA_ROOT, str(out_path))
                 st.cache_data.clear()
@@ -719,24 +698,8 @@ def render_compliance():
     st.markdown('<div class="section-title">Requirement Comparison</div>', unsafe_allow_html=True)
     st.dataframe(df, use_container_width=True, height=380)
 
-    st.download_button("⬇ Download Full Report (CSV)", df.to_csv(index=False).encode(),
+    st.download_button("⬇️ Download Full Report (CSV)", df.to_csv(index=False).encode(),
                         file_name="compliance_report.csv", mime="text/csv")
-
-    st.markdown('<div class="section-title">Recommendations</div>', unsafe_allow_html=True)
-    flagged = df[df["Compliance_Label"] != "Compliant"]
-    if flagged.empty:
-        st.success("No outstanding compliance issues.")
-    else:
-        for _, r in flagged.iterrows():
-            kind = compliance_badge_kind(r["Compliance_Label"])
-            st.markdown(f"""
-            <div class="glass-card" style="margin-bottom:0.6rem;">
-              {badge(r['Compliance_Label'], kind)} &nbsp;
-              <b>{r['Requirement_ID']}</b> &mdash; {r['Equipment_ID']}
-              <div class="subtle" style="margin-top:0.3rem;">{r['Rationale']}</div>
-              {"<div style='margin-top:0.3rem;'>👉 " + str(r['Suggested_Action']) + "</div>" if pd.notna(r.get('Suggested_Action')) and r.get('Suggested_Action') else ""}
-            </div>
-            """, unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -744,18 +707,18 @@ def render_compliance():
 # ---------------------------------------------------------------------------
 def render_schedule():
     page_header("📅", "Schedule Risk Predictor",
-                 "Baseline vs. active schedule analysis, delay prediction, and recovery planning.", "#F59E0B")
+                 "Baseline vs. active schedule analysis, delay prediction, and recovery planning.", "#F59E0B",
+                 show_search=False)
 
     srp = get_schedule_predictor()
     if srp is None:
-        empty_state("Schedule module not connected", SCHEDULE_ERR or "Could not load schedule/supply-chain CSVs from project_data.")
+        empty_state("Schedule module not connected", SCHEDULE_ERR or "Could not load schedule files.")
         return
 
     try:
         summary = srp.dashboard_summary()
         delays = srp.predict_delays()
         deps = srp.dependency_analysis()
-        risk = srp.risk_prediction()
         actions = srp.recommend_recovery_actions()
     except Exception as e:
         empty_state("Could not compute schedule analytics", str(e))
@@ -763,10 +726,10 @@ def render_schedule():
 
     k1, k2, k3, k4, k5 = st.columns(5)
     kpi_card(k1, "📋", "Total Activities", summary["total_activities"], "tracked", "#2563EB")
-    kpi_card(k2, "⚠", "At Risk", summary["activities_at_risk"], "activities flagged", "#F59E0B")
-    kpi_card(k3, "🛤", "Critical Path", summary["critical_path_activities"], "items on critical path", "#8B5CF6")
+    kpi_card(k2, "⚠️", "At Risk", summary["activities_at_risk"], "activities flagged", "#F59E0B")
+    kpi_card(k3, "🛤️", "Critical Path", summary["critical_path_activities"], "items on critical path", "#8B5CF6")
     kpi_card(k4, "❌", "Breaches", summary["schedule_breaches"], "float exhausted", "#EF4444")
-    kpi_card(k5, "⏱", "Avg Delay", f"{summary['avg_predicted_delay_days']}d", "predicted", "#06B6D4")
+    kpi_card(k5, "⏱️", "Avg Delay", f"{summary['avg_predicted_delay_days']}d", "predicted", "#06B6D4")
 
     st.write("")
     c1, c2 = st.columns([2, 1])
@@ -788,19 +751,6 @@ def render_schedule():
         fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#F8FAFC", height=380)
         st.plotly_chart(fig2, use_container_width=True)
 
-    st.markdown('<div class="section-title">Dependency Graph & Critical Path</div>', unsafe_allow_html=True)
-    dot_lines = ["digraph G {", "bgcolor=transparent;",
-                 'node [style=filled, fontname="Inter", fontcolor=white, color="#2563EB"];']
-    for _, r in deps.iterrows():
-        preds = r.get("Predecessors", "")
-        preds_list = preds if isinstance(preds, list) else [p.strip() for p in str(preds).split(",") if p.strip() and str(preds) != "nan"]
-        fill = "#7F1D1D" if r.get("On_Critical_Path") else "#111827"
-        dot_lines.append(f'"{r["Activity_ID"]}" [fillcolor="{fill}"];')
-        for p in preds_list:
-            dot_lines.append(f'"{p}" -> "{r["Activity_ID"]}";')
-    dot_lines.append("}")
-    st.graphviz_chart("\n".join(dot_lines))
-
     tab1, tab2 = st.tabs(["Dependency Analysis", "Recommended Recovery Actions"])
     with tab1:
         st.dataframe(deps, use_container_width=True)
@@ -809,7 +759,7 @@ def render_schedule():
             kind = risk_badge_kind(r["Risk_Level"])
             st.markdown(f"""
             <div class="glass-card" style="margin-bottom:0.5rem;">
-              {badge(r['Risk_Level'], kind)} &nbsp;<b>{r['Activity_ID']}</b> &mdash; {r['Activity_Name']}
+              {badge(r['Risk_Level'], kind)} &nbsp;<b>{r['Activity_ID']}</b> — {r['Activity_Name']}
               <div class="subtle" style="margin-top:0.3rem;">{r['Recommended_Actions']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -824,7 +774,7 @@ def render_supply_chain():
 
     tracker = get_supply_tracker()
     if tracker is None:
-        empty_state("Supply chain module not connected", SUPPLY_ERR or "Could not load supply-chain CSVs from project_data.")
+        empty_state("Supply chain module not connected", SUPPLY_ERR or "Could not load supply-chain files.")
         return
 
     try:
@@ -841,7 +791,7 @@ def render_supply_chain():
     kpi_card(k1, "📦", "Total Equipment", summary["total_equipment"], "tracked", "#2563EB")
     kpi_card(k2, "⏳", "Delayed", summary["delayed_shipments"], "shipments", "#F59E0B")
     kpi_card(k3, "❌", "Breaches", summary["schedule_breaches"], "schedule critical", "#EF4444")
-    kpi_card(k4, "⚠", "High Risk", summary["high_risk_items"], "vendor items", "#F59E0B")
+    kpi_card(k4, "⚠️", "High Risk", summary["high_risk_items"], "vendor items", "#F59E0B")
     kpi_card(k5, "✅", "On-Time %", f"{summary['on_time_pct']}%", "delivery rate", "#22C55E")
 
     st.write("")
@@ -856,30 +806,6 @@ def render_supply_chain():
     except Exception:
         st.dataframe(deliveries, use_container_width=True)
 
-    st.markdown('<div class="section-title">India Logistics Map</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="glass-card" style="height:220px; display:flex; align-items:center; justify-content:center;">
-      <div class="subtle">🗺 Interactive India map (origin hubs &rarr; site) &mdash; connect a mapping provider to enable.</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="section-title">Equipment & Supplier Cards</div>', unsafe_allow_html=True)
-    cards_per_row = 3
-    rows = [deliveries.iloc[i:i + cards_per_row] for i in range(0, len(deliveries), cards_per_row)]
-    for row in rows:
-        cols = st.columns(cards_per_row)
-        for col, (_, r) in zip(cols, row.iterrows()):
-            with col:
-                kind = "red" if r["Days_Delayed"] and r["Days_Delayed"] > 3 else ("orange" if r["Days_Delayed"] and r["Days_Delayed"] > 0 else "green")
-                st.markdown(f"""
-                <div class="glass-card">
-                  <b>{r['Equipment_ID']}</b> &mdash; {r.get('Equipment_Name','')}
-                  <div class="subtle">Vendor: {r.get('Vendor_ID','-')} | Hub: {r.get('Origin_Hub','-')}</div>
-                  <div style="margin-top:0.4rem;">{badge(r['Current_Transit_Status'], kind)}</div>
-                  <div class="subtle" style="margin-top:0.3rem;">ETA: {r.get('Est_Arrival_Date','-')} | Delay: {r.get('Days_Delayed',0)}d</div>
-                </div>
-                """, unsafe_allow_html=True)
-
     tab1, tab2, tab3 = st.tabs(["Delay Detection", "Risk Analysis", "Alternative Suppliers"])
     with tab1:
         st.dataframe(delays, use_container_width=True)
@@ -889,22 +815,28 @@ def render_supply_chain():
         for _, r in recs.iterrows():
             st.markdown(f"""
             <div class="glass-card" style="margin-bottom:0.5rem;">
-              <b>{r['Equipment_ID']}</b> &mdash; {r.get('Equipment_Name','')}<br/>
+              <b>{r['Equipment_ID']}</b> — {r.get('Equipment_Name','')}<br/>
               Current: {badge(r['Current_Vendor'], 'blue')} {badge(r['Current_Risk_Level'], risk_badge_kind(r['Current_Risk_Level']))}
-              &rarr; Recommended: {badge(r['Recommended_Alternate'], 'green')}
+              → Recommended: {badge(r['Recommended_Alternate'], 'green')}
               <div class="subtle" style="margin-top:0.3rem;">{r['Rationale']}</div>
             </div>
             """, unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
-# PAGE: COMMISSIONING QA
+# PAGE: COMMISSIONING QA (Integrated Pipeline Control Center)
 # ---------------------------------------------------------------------------
 def render_qa():
     page_header("🧪", "Commissioning QA",
-                 "Visual defect detection, sensor telemetry analysis, and commissioning sign-off.", "#06B6D4")
+                 "Visual defect detection, sensor telemetry analysis, model training pipeline, and automated QA reporting.", "#06B6D4")
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Image Analysis", "Sensor Analysis", "Testing Checklist", "Generated Report"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "Image Analysis", 
+        "Sensor Analysis", 
+        "Pipeline Orchestrator", 
+        "Testing Checklist", 
+        "Generated Reports"
+    ])
 
     with tab1:
         st.markdown('<div class="section-title">Equipment Defect Detection</div>', unsafe_allow_html=True)
@@ -912,7 +844,7 @@ def render_qa():
         if img is not None:
             st.image(img, caption="Uploaded image", use_container_width=True)
             if not QA_VISION_OK:
-                empty_state("Vision model not available", "Quality_Assurance.vision.detect_defect could not be imported (trained weights may be missing).")
+                empty_state("Vision model not available", "Quality_Assurance.vision.detect_defect could not be imported.")
             else:
                 if st.button("Run Defect Detection", type="primary"):
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
@@ -921,7 +853,7 @@ def render_qa():
                     with st.spinner("Running YOLO defect detection..."):
                         try:
                             run_defect_detection(tmp_path)
-                            st.success("Detection complete - see Generated Report tab.")
+                            st.success("Detection complete - see Generated Reports tab.")
                         except Exception as e:
                             st.error(f"Detection failed: {e}")
 
@@ -945,6 +877,36 @@ def render_qa():
                     st.error(f"Sensor analysis failed: {e}")
 
     with tab3:
+        st.markdown('<div class="section-title">⚙️ End-to-End Pipeline Orchestrator</div>', unsafe_allow_html=True)
+        st.markdown("Execute data generation, dataset preparation, and YOLO model training directly from the UI.")
+        
+        col_p1, col_p2, col_p3 = st.columns(3)
+        with col_p1:
+            if st.button("1. Generate Synthetic Images", use_container_width=True):
+                with st.spinner("Generating defect samples & annotations..."):
+                    try:
+                        import Quality_Assurance.vision.generate_defect_images as gen_mod
+                        st.success("Synthetic images generated successfully!")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+        with col_p2:
+            if st.button("2. Prepare YOLO Dataset", use_container_width=True):
+                with st.spinner("Splitting train/val and converting boxes..."):
+                    try:
+                        import Quality_Assurance.vision.prepare_dataset as prep_mod
+                        st.success("Dataset prepared for YOLO!")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+        with col_p3:
+            if st.button("3. Train YOLOv8 Model", type="primary", use_container_width=True):
+                with st.spinner("Training model (this may take a few minutes)..."):
+                    try:
+                        import Quality_Assurance.vision.train_yolo as train_mod
+                        st.success("Model training complete! Weights saved.")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+    with tab4:
         st.markdown('<div class="section-title">Commissioning Testing Checklist</div>', unsafe_allow_html=True)
         checklist_items = [
             "UPS load bank test completed",
@@ -960,7 +922,7 @@ def render_qa():
         st.progress(done / len(checklist_items))
         st.caption(f"{done}/{len(checklist_items)} items complete")
 
-    with tab4:
+    with tab5:
         st.markdown('<div class="section-title">Generated Commissioning Reports</div>', unsafe_allow_html=True)
         if QA_REPORTS_DIR.exists():
             reports = sorted(QA_REPORTS_DIR.glob("*_report.txt"))
@@ -1050,7 +1012,7 @@ def render_alerts():
 # PAGE: SETTINGS
 # ---------------------------------------------------------------------------
 def render_settings():
-    page_header("⚙", "Settings", "Project configuration, theme, and system information.", "#94A3B8")
+    page_header("⚙️", "Settings", "Project configuration, theme, and system information.", "#94A3B8")
 
     st.markdown('<div class="section-title">Project Configuration</div>', unsafe_allow_html=True)
     st.text_input("Project Data Root", value=PROJECT_DATA_ROOT, disabled=True)
@@ -1066,28 +1028,12 @@ def render_settings():
         ("Supply Chain Tracker", SUPPLY_OK, SUPPLY_ERR),
         ("QA Sensor Analyzer", QA_SENSOR_OK, ""),
         ("QA Vision Detector", QA_VISION_OK, ""),
+        ("QA Pipeline Orchestrator", QA_PIPELINE_OK, ""),
     ]
     for name, ok, err in statuses:
         kind = "green" if ok else "red"
         label = "ONLINE" if ok else "OFFLINE"
-        st.markdown(f'{badge(label, kind)} &nbsp; **{name}** {"&mdash; " + err if err else ""}', unsafe_allow_html=True)
-
-    st.markdown("**AI Knowledge Assistant** &mdash; lazy-loaded on first use (ChromaDB + embedding model only load when you actually ask a question)")
-    if st.button("Check AI Assistant Status Now"):
-        with st.spinner("Connecting to ChromaDB and validating Gemini API key..."):
-            ai_state = _load_ai_assistant()
-        kind = "green" if ai_state["ok"] else "red"
-        label = "ONLINE" if ai_state["ok"] else "OFFLINE"
-        st.markdown(f'{badge(label, kind)} {ai_state["err"]}', unsafe_allow_html=True)
-
-    st.markdown('<div class="section-title">About</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="glass-card">
-      AI EPC Intelligence Platform unifies knowledge retrieval, compliance verification,
-      schedule risk prediction, supply chain tracking, and commissioning QA into a single
-      command center for data center EPC delivery.
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown(f'{badge(label, kind)} &nbsp; **{name}** {"— " + err if err else ""}', unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">System Information</div>', unsafe_allow_html=True)
     st.code(f"Python: {sys.version.split()[0]}\nStreamlit: {st.__version__}\nBase directory: {BASE_DIR}", language="text")
