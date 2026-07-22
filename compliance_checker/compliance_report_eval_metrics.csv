@@ -1,5 +1,0 @@
-Label,Support,Precision,Recall,F1
-Compliant,6,1.0,1.0,1.0
-Missing Information,3,0.75,1.0,0.857
-Non-Compliant,3,1.0,0.667,0.8
-Partial Compliance,1,1.0,1.0,1.0
