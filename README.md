@@ -1,10 +1,8 @@
-# 🏢 CortexEPC — AI-Powered Data Centre EPC Project Intelligence Platform
+# 🏢 AI-Powered Data Centre EPC Intelligence Platform
 
-**One relational dataset. Five AI modules. A single source of truth for a data centre build.**
+### One Unified Dataset • Five AI Modules • One Intelligent Dashboard
 
-> Project ID: `PRJ-MUM-2026` · Domain: EPC (Engineering, Procurement & Construction) for hyperscale data centres · Built for [Hackathon Name / Track]
-
----
+An end-to-end AI platform that assists EPC teams throughout the lifecycle of a hyperscale data centre project by combining document intelligence, compliance verification, schedule forecasting, supply chain monitoring, and commissioning quality assurance into a single Streamlit application.
 
 ## 1. The Problem
 
@@ -21,25 +19,21 @@ India's data centre capacity is projected to scale from **~900 MW to 2,700+ MW b
 
 None of it talks to each other. A generator shipment delay sitting in a logistics spreadsheet has no automatic link to the critical-path activity it's about to blow through. A vendor's UPS efficiency number in a 40-page PDF submittal never gets checked against the client's spec until someone manually does it, usually too late.
 
-**CortexEPC unifies all of it under one relational backbone — `Project_ID`, `Equipment_ID`, `Vendor_ID`, `Activity_ID` — and layers AI on top to answer, predict, and recommend, instead of just storing.**
+**EPC unifies all of it under one relational backbone — `Project_ID`, `Equipment_ID`, `Vendor_ID`, `Activity_ID` — and layers AI on top to answer, predict, and recommend, instead of just storing.**
 
 ---
 
-## 2. What's Actually Built
+## 2. What's Built
 
-This is an honest status table — everything marked ✅ **Implemented** runs end-to-end today on the dataset in this repo and is covered by automated tests. Everything marked 🧩 **Data-ready** has its full data pipeline built (CSVs, PDFs, ground-truth labels, images) but the AI logic on top is scoped for the next build phase.
+All five AI modules are fully implemented and integrated into a single Streamlit dashboard.
 
-| # | Module | Status | What it does |
-|---|--------|--------|---------------|
-| 1 | 💬 AI Project Knowledge Assistant (RAG) | ✅ Implemented | Chat over the entire project corpus with cited answers |
-| 2 | ⚖️ AI Compliance Checker | 🧩 Data-ready | Requirements register + vendor compliance ground truth generated; automated checker is next |
-| 3 | 📅 AI Schedule Risk Predictor | ✅ Implemented | Cascading delay prediction, critical path, recovery actions |
-| 4 | 🚚 AI Supply Chain Tracker | ✅ Implemented | Delay detection against float, risk scoring, alternate vendor recommender |
-| 5 | 🧪 AI Commissioning QA Copilot | 🧩 Data-ready | Synthetic defect images + labelled bounding boxes generated for a CV model; detection pipeline is next |
-
-Modules 3 and 4 each ship with a dedicated `pytest` suite built on deterministic fixtures (not the random dataset generator), so every number the module reports — cascade math, float exhaustion, risk bands — is verified against a hand-computed expected answer.
-
----
+| Module | Status | Description |
+|---------|--------|-------------|
+| 🤖 AI Project Knowledge Assistant | ✅ Complete | RAG-powered document assistant using Gemini + ChromaDB |
+| 📋 AI Compliance Checker | ✅ Complete | Automatically verifies vendor documents against client requirements and generates compliance reports |
+| 📅 AI Schedule Risk Predictor | ✅ Complete | Predicts cascading schedule delays, calculates risk scores, and recommends recovery actions |
+| 🚚 AI Supply Chain Tracker | ✅ Complete | Tracks procurement status, shipment delays, vendor risks, and alternate suppliers |
+| 🧪 AI Commissioning QA Copilot | ✅ Complete | Performs sensor anomaly detection, defect detection using YOLO, and generates commissioning reports |
 
 ## 3. Architecture
 
@@ -177,85 +171,147 @@ The automated OCR/NLP comparison engine that turns this into a live checker is t
 
 ## 5. Tech Stack
 
-| Layer | Choice |
-|---|---|
-| LLM | Google Gemini (`gemini-3.5-flash`) via `google-genai` |
-| Vector store & embeddings | ChromaDB (persistent, local) + `all-MiniLM-L6-v2` sentence-transformer |
-| Document parsing / OCR | `pypdf`, `pdf2image`, `pytesseract` |
-| Data & relational joins | `pandas` |
-| Predictive engine | Custom Python (topological sort for cascade propagation, weighted risk scoring) |
-| Synthetic dataset generation | `fpdf2` (PDF specs/drawings), `Pillow` (scanned docs, equipment images, synthetic defects) |
-| Terminal UX | `rich` (Markdown-rendered panels for the RAG assistant) |
-| Testing | `pytest`, deterministic fixtures (no dependency on the random dataset generator) |
-| Frontend dashboard | Static HTML/CSS today (`export_dashboard_html()` in Modules 3 & 4) → **migrating to Streamlit** (see Roadmap) |
+| Layer | Technologies |
+|--------|--------------|
+| Frontend | Streamlit |
+| Backend | Python |
+| LLM | Google Gemini 2.5 Flash |
+| Vector Database | ChromaDB |
+| Embeddings | all-MiniLM-L6-v2 |
+| OCR | Tesseract OCR + pdf2image |
+| Computer Vision | YOLOv8 |
+| NLP | Sentence Transformers |
+| Data Processing | Pandas, NumPy |
+| Image Processing | Pillow, OpenCV |
+| ML Framework | Scikit-learn |
+| Document Parsing | PyPDF, PyMuPDF |
+| Environment | python-dotenv |
+| Testing | pytest |
 
----
 
 
+# 6. Quickstart
 
-## 6. Quickstart
+## Prerequisites
 
-### Prerequisites
 - Python 3.10+
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) installed and on your PATH (only needed if you regenerate/read scanned PDFs)
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) (only needed for Module 1)
+- Tesseract OCR
+- Poppler
+- Gemini API Key
 
-### Install
+---
+
+## Installation
+
 ```bash
+git clone <repository-url>
+
+cd AI-DataCenter-EPC-Assistant
+
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
 
-pip install pandas chromadb sentence-transformers google-genai python-dotenv rich \
-            pypdf pdf2image pytesseract Pillow requests fpdf2 pytest
-```
+# Windows
+venv\Scripts\activate
 
-### 1. Generate the dataset
-```bash
-python setup_project.py     # scaffolds project_data/ folder structure
-python fill_data.py         # generates specs, drawings, schedule, supply chain,
-                             #   compliance KB, and sensor telemetry
-python fill_images.py       # generates equipment photos + synthetic defect samples
-```
-
-### 2. Run Module 1 — Knowledge Assistant
-```bash
-echo "GEMINI_API_KEY=your_key_here" > .env
-python build_rag_database.py    # builds the ChromaDB vector store (run once)
-python assistant.py             # interactive chat — ask about any document in the corpus
-```
-
-### 3. Run Module 3 — Schedule Risk Predictor
-```bash
-python schedule_risk_predictor.py --data-root project_data --out reports/
-# → reports/schedule_dashboard.html + reports/schedule_dashboard.json
-```
-
-### 4. Run Module 4 — Supply Chain Tracker
-```bash
-python supply_chain_tracker.py --data-root project_data --out reports/
-# → reports/supply_chain_dashboard.html + reports/supply_chain_dashboard.json
-```
-
-### 5. Run the tests
-```bash
-pytest test_schedule_risk_predictor.py test_supply_chain_tracker.py -v
+pip install -r requirements.txt
 ```
 
 ---
+
+## Configure Environment
+
+Create a `.env` file in the project root.
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+---
+
+## Generate Project Dataset (Run Once)
+
+```bash
+python fill_data.py
+
+python fill_images.py
+```
+
+---
+
+## Build Vector Database (Run Once)
+
+```bash
+python AI_Assistant/build_rag_database.py
+```
+
+---
+
+## Run Backend Modules
+
+Before launching Streamlit, execute:
+
+```bash
+python Compliance_Checker/compliance_checker.py
+
+python Schedule_Risk_Prediction/schedule_risk_prediction.py
+
+python Supply_Chain_Tracker/supply_chain_tracker.py
+
+python Quality_Assurance/sensors/sensor_analyzer.py
+
+python Quality_Assurance/vision/detect_defect.py
+
+python Quality_Assurance/reports/report_generator.py
+```
+
+---
+
+## Launch the Dashboard
+
+```bash
+streamlit run app.py
+```
+
+Open your browser and navigate to:
+
+```
+http://localhost:8501
+```
+
+The dashboard automatically integrates all five AI modules.
 
 ## 7. Roadmap
 
-- [ ] **Streamlit frontend** — replace the static HTML exports for Modules 3 & 4, and give Module 1's terminal chat a proper chat UI, all reading from the same `build_dashboard()` JSON payloads that already exist — no backend rework needed.
-- [ ] **Module 2 — Compliance Checker**: automated OCR/NLP comparison engine over the already-generated `requirements_register.csv` / `compliance_ground_truth.csv`.
-- [ ] **Module 5 — Commissioning QA Copilot**: YOLOv8 defect detector trained/evaluated on the already-labelled `image_annotations.csv` dataset, plus SCADA sensor stream anomaly detection over `10_Sensor_Readings/`.
-- [ ] Replace the hand-declared `ACTIVITY_DEPENDENCIES` map in Module 3 with a real predecessor/successor column once the schedule source system exposes one — the cascade engine already consumes it as a pluggable `{activity: [predecessors]}` dict, so no logic changes needed.
-- [ ] Wire Module 4's delay detection directly into Module 3's `Days_Delayed` input, so a supply chain event triggers a live schedule re-forecast instead of a separate report.
-
----
+- [ ] One-click startup (run every backend service directly from Streamlit)
+- [ ] Live Primavera/MS Project integration
+- [ ] SAP & ERP procurement integration
+- [ ] IoT streaming instead of static sensor CSVs
+- [ ] BIM / Digital Twin integration
+- [ ] Multi-agent collaboration between modules
+- [ ] Role-based authentication
+- [ ] Cloud deployment (AWS / Azure / GCP)
+- [ ] Mobile application for field engineers
+- [ ] Real-time project analytics dashboard
 
 ## 8. Why This Matters
 
-Every number in this platform is traceable back to a source row or document — the RAG assistant cites its sources, the schedule predictor shows direct vs. inherited delay separately, and the risk scores are simple, auditable weighted formulas rather than an opaque black box. For an industry where a wrong call costs weeks and crores on a live construction site, **explainability was treated as a feature, not an afterthought.**
+Modern EPC projects generate thousands of documents, engineering drawings, procurement records, inspection reports, commissioning logs, and sensor readings. Managing these independently leads to schedule overruns, compliance failures, increased costs, and delayed project delivery.
+
+CortexEPC transforms fragmented project information into a unified AI-powered decision support platform.
+
+The platform enables project teams to:
+
+- 🤖 Ask natural-language questions across the complete project knowledge base.
+- 📋 Automatically verify vendor submissions against client specifications.
+- 📅 Predict schedule delays before they impact project milestones.
+- 🚚 Monitor procurement and logistics risks in real time.
+- 🧪 Detect commissioning defects using computer vision and sensor analytics.
+
+Unlike traditional dashboards, CortexEPC combines document intelligence, predictive analytics, computer vision, and engineering workflows into a single application.
+
+Every recommendation remains transparent and explainable. AI responses include document citations, compliance decisions are backed by requirement comparisons, schedule forecasts show cascading delay calculations, and risk scores are generated using interpretable engineering models rather than opaque black-box predictions.
+
+The result is a practical AI platform that helps EPC teams reduce delays, improve compliance, minimize project risks, and deliver hyperscale data centre projects more efficiently.
 ## 9.📂 Project Structure
 
 ```text
