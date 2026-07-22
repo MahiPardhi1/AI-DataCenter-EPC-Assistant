@@ -28,6 +28,22 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
+import subprocess
+import sys
+
+scripts = [
+    "AI_Assistant/build_rag_database.py",
+    "Compliance_Checker/compliance_checker.py",
+    "Schedule_Risk_Prediction/schedule_risk_prediction.py",
+    "Supply_Chain_Tracker/supply_chain_tracker.py",
+    "Quality_Assurance/sensors/sensor_analyzer.py",
+    "Quality_Assurance/vision/detect_defect.py",
+    "Quality_Assurance/reports/report_generator.py",
+]
+
+for script in scripts:
+    subprocess.run([sys.executable, script], check=True)
+
 # ---------------------------------------------------------------------------
 # PATHS
 # ---------------------------------------------------------------------------
