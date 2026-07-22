@@ -61,7 +61,7 @@ print(f"Validation Images : {len(val_records)}")
 # Function to convert bbox to YOLO format
 # ---------------------------------------
 
-def convert_to_yolo(x, y, w, h, img_width=600, img_height=400):
+def convert_to_yolo(x, y, w, h, img_width=640, img_height=480):
 
     x_center = (x + w / 2) / img_width
     y_center = (y + h / 2) / img_height

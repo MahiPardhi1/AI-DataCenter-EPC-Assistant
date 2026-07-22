@@ -271,11 +271,35 @@ AI-DataCenter-EPC-Assistant/
 │   ├── compliance_report_complete.csv
 │   └── compliance_report_evaluation.csv
 │
-├── Quality_Assurance/
-│   ├── reports/
-│   ├── sensors/
-│   ├── utils/
-│   └── vision/
+Quality_Assurance/
+│
+├── reports/
+│   └── report_generator.py
+│
+├── sensors/
+│   └── sensor_analyzer.py
+│
+├── utils/
+│   ├── config.py
+│   └── helper.py
+│
+Quality_Assurance/
+│
+├── reports/
+│   └── report_generator.py
+│
+├── sensors/
+│   └── sensor_analyzer.py
+│
+├── utils/
+│   ├── config.py
+│   └── helper.py
+│
+└── vision/
+    ├── detect_defect.py
+    ├── generate_defect_images.py
+    ├── prepare_dataset.py
+    └── train_yolo.py
 │
 ├── Schedule_Risk_Prediction/
 │   ├── schedule_dashboard.py
